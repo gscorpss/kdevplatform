@@ -49,6 +49,7 @@ namespace DUChainUtils {
   KDEVPLATFORMLANGUAGE_EXPORT KTextEditor::CodeCompletionModel::CompletionProperties completionProperties(const Declaration* dec);
   KDEVPLATFORMLANGUAGE_EXPORT QIcon iconForProperties(KTextEditor::CodeCompletionModel::CompletionProperties p);
   KDEVPLATFORMLANGUAGE_EXPORT QIcon iconForDeclaration(const Declaration* dec);
+  
   /** Asks the language-plugins for standard-contexts for the given url, and returns one if available.
     * If there is no language-plugin registered for the given url, it will just try to get any top-context for the file from the du-chain.
     * NOTE: The DUChain needs to be read or write locked when you call this.
@@ -59,13 +60,20 @@ namespace DUChainUtils {
    * Must only be called from the foreground or with the foreground lock held.
    * If the item under the cursor is a use, the declaration is returned. */
   KDEVPLATFORMLANGUAGE_EXPORT Declaration* itemUnderCursor(const KUrl& url, const SimpleCursor& cursor);
+  
   /**If the given declaration is a definition, and has a real declaration
     *attached, returns that declarations. Else returns the given argument. */
   KDEVPLATFORMLANGUAGE_EXPORT Declaration* declarationForDefinition(Declaration* definition, TopDUContext* topContext = 0);
+  
   ///Returns the first declaration in the given line. Searches the given context and all sub-contexts.
   ///Must only be called from the foreground or with the foreground lock held.
   KDEVPLATFORMLANGUAGE_EXPORT Declaration* declarationInLine(const KDevelop::SimpleCursor& cursor, KDevelop::DUContext* ctx);
 
+  typedef QPair<Declaration*,int> DeclPosPair;
+  /// Returns a list of declarations referenced in the specified line and their positions in line
+  KDEVPLATFORMLANGUAGE_EXPORT QList< DeclPosPair > usesInLine(const KUrl& url, int line, DUContext* ctx=NULL);
+  
+  
   class KDEVPLATFORMLANGUAGE_EXPORT DUChainItemFilter {
     public:
     virtual bool accept(Declaration* decl) = 0;

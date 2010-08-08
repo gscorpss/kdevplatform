@@ -53,6 +53,7 @@ public:
                                      const QString& display = "") = 0;
 
     virtual QString expressionUnderCursor(KTextEditor::Document* doc, const KTextEditor::Cursor& cursor) = 0;
+    virtual QString expressionAtPosition(const QString& line, int pos) = 0;
 
     virtual void addWatch(Variable* variable) = 0;
     virtual void addWatchpoint(Variable* variable) = 0;
@@ -60,7 +61,8 @@ public:
     enum UpdateType {
         UpdateNone    = 0x0,
         UpdateLocals  = 0x1,
-        UpdateWatches = 0x2
+        UpdateWatches = 0x2,
+        UpdateAutos   = 0x4
     };
     Q_DECLARE_FLAGS(UpdateTypes, UpdateType)
     void setAutoUpdate(QFlags<UpdateType> autoUpdate);

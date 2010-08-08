@@ -26,6 +26,7 @@ kde4_add_library(kdevplatformdebugger SHARED ${kdevplatformdebugger_LIB_SRCS})
 target_link_libraries(kdevplatformdebugger
         kdevplatforminterfaces
         kdevplatformutil
+        kdevplatformlanguage
         ${QT_QTCORE_LIBRARY} 
         ${KDE4_KDEUI_LIBS}
         ${KDE4_KTEXTEDITOR_LIBS}

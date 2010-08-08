@@ -342,6 +342,44 @@ Declaration* DUChainUtils::declarationInLine(const KDevelop::SimpleCursor& _curs
   return 0;
 }
 
+
+QList< DUChainUtils::DeclPosPair > DUChainUtils::usesInLine(const KUrl& url, int line, DUContext* ctx)
+{
+  QList< DeclPosPair > result;
+  
+  TopDUContext* topctx= DUChainUtils::standardContextForUrl(url);
+  if (!topctx) return result;   // return empty list
+
+  if(!ctx)
+  {
+    ctx=topctx->findContextAt( SimpleCursor(line, 0) );
+    if(!ctx) return result;
+  }
+
+  // first, get declarations
+  foreach(Declaration* decl, ctx->localDeclarations())
+    if(line==decl->range().start.line ||
+       line==decl->range().end.line)
+      result << DeclPosPair( decl, decl->range().start.column );
+  
+   foreach(DUContext* childCtx, ctx->childContexts())
+     foreach(DeclPosPair pair, usesInLine(url, line, childCtx))
+         result << pair; 
+      
+   for ( int i=0; i< ctx->usesCount() ; ++i)
+   {
+     const Use& use= ctx->uses()[i];
+     Declaration* decl = use.usedDeclaration(topctx);
+     
+     if(line==use.m_range.start.line ||
+        line==use.m_range.end.line)
+       result << DeclPosPair( decl, use.m_range.start.column );
+   }
+ 
+  return result;
+}
+
+
 DUChainUtils::DUChainItemFilter::~DUChainItemFilter() {
 }
 

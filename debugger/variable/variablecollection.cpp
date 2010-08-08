@@ -39,13 +39,17 @@
 #include "../../interfaces/idebugcontroller.h"
 #include "../interfaces/idebugsession.h"
 #include "../interfaces/ivariablecontroller.h"
+#include "../../language/duchain/duchainlock.h"
+#include "../../language/duchain/duchainutils.h"
+#include "../../language/duchain/declaration.h"
 #include "variabletooltip.h"
 
 namespace KDevelop {
 
 IDebugSession* currentSession()
 {
-    return ICore::self()->debugController()->currentSession();
+    IDebugController* dc= ICore::self()->debugController();
+    return (dc)?dc->currentSession():NULL;
 }
 
 IDebugSession::DebuggerState currentSessionState()
@@ -267,8 +271,10 @@ Locals::Locals(TreeModel* model, TreeItem* parent, const QString &name)
     setData(QVector<QVariant>() << name << QString());
 }
 
+// update current list of local variables
 QList<Variable*> Locals::updateLocals(QStringList locals)
 {
+    // 1. get all displayed variables into 'existing' list
     QSet<QString> existing, current;
     for (int i = 0; i < childItems.size(); i++)
     {
@@ -277,6 +283,7 @@ QList<Variable*> Locals::updateLocals(QStringList locals)
         existing << var->expression();
     }
 
+    // 2. add to view all variables that not present there 
     foreach (const QString& var, locals) {
         current << var;
         // If we currently don't display this local var, add it.
@@ -292,6 +299,7 @@ QList<Variable*> Locals::updateLocals(QStringList locals)
         }
     }
 
+    // 3. delete from view variables which do not exist in new list
     for (int i = 0; i < childItems.size(); ++i) {
         KDevelop::Variable* v = static_cast<KDevelop::Variable*>(child(i));
         if (!current.contains(v->expression())) {
@@ -328,11 +336,115 @@ void Locals::resetChanged()
     }
 }
 
+Autos::Autos(TreeModel* model, TreeItem* parent)
+: TreeItem(model, parent)
+{
+    setData(QVector<QVariant>() << "Context autos" << QString());
+}
+
+QStringList getAutos(IDebugSession* session=NULL)
+{
+    QStringList result;
+    
+    if(!session) session=currentSession();
+    if(!session) return result;
+
+    const QString& file=session->currentFile();
+    int line=session->currentLine();
+    if(file.isEmpty() || line<0) return result;
+
+    // get a current line text
+    QString lineText;
+    QPair<KUrl,int> openUrl = session->convertToLocalUrl(qMakePair<KUrl,int>( file, line ));
+    KDevelop::IDocument* document = KDevelop::ICore::self()
+        ->documentController()
+        ->openDocument(openUrl.first, KTextEditor::Cursor(openUrl.second, 0));
+    if(document)
+    {
+        lineText = document->textDocument()->line(line);
+    }
+        
+    DUChainReadLocker lock;
+
+    foreach(DUChainUtils::DeclPosPair pair, DUChainUtils::usesInLine(file, line) )
+    {
+        Declaration* pDecl=pair.first;
+        int column=pair.second;
+
+        if(pDecl && pDecl->kind()==Declaration::Instance &&
+            !pDecl->isFunctionDeclaration())
+        {
+            QString expr = session->variableController()->expressionAtPosition(lineText,column);
+            if(expr.isEmpty())
+                expr= pDecl->identifier().toString();  // should not get here but to be sure we do our best..
+                
+            if(!expr.isEmpty() && !result.contains(expr))
+                result << expr; // should be unique
+        }
+    }
+    
+    return result;
+}
+
+// updates autos list to display previous and current line references
+void Autos::update()
+{
+    QStringList new_autos=getAutos();
+    
+    // basically we need to delete variables present only in prev_autos_
+    // and show curr_autos_ and new_autos
+    // then reset prev_autos_ to curr_autos_ and curr_autos_ to new_autos for next step
+
+    // add new_autos that are not yet shown
+    foreach (const QString& var, new_autos) {
+        // If we currently don't display this local var, add it.
+        if( !curr_autos_.contains(var) && !prev_autos_.contains(var) ) {
+            // FIXME: passing variableCollection this way is awkward.
+            // In future, variableCollection probably should get a
+            // method to create variable.
+            Variable* v = 
+                currentSession()->variableController()->createVariable(
+                    ICore::self()->debugController()->variableCollection(),
+                    this, var );
+            appendChild( v, false );
+        }
+    }
+
+    // delete old variables (not in curr_autos_ 
+    for (int i = 0; i < childItems.size(); ++i) {
+        KDevelop::Variable* v = static_cast<KDevelop::Variable*>(child(i));
+        if (!curr_autos_.contains(v->expression()) && !new_autos.contains(v->expression())) {
+            removeChild(i);
+            --i;
+            // FIXME: check that -var-delete is sent.
+            delete v;
+        }
+    }
+
+    prev_autos_ = curr_autos_;
+    curr_autos_ = new_autos;
+
+    if (hasMore()) {
+        setHasMore(false);
+    }
+
+    // call to update variables
+    foreach (TreeItem *i, childItems) {
+        Q_ASSERT(dynamic_cast<Variable*>(i));
+        Variable* var=static_cast<Variable*>(i);
+        var->setChanged(false);
+        var->attachMaybe();
+    }
+}
+
+
 VariablesRoot::VariablesRoot(TreeModel* model)
 : TreeItem(model)
 {
     watches_ = new Watches(model, this);
     appendChild(watches_, true);
+    autos_   = new Autos(model, this);
+    appendChild(autos_, true);
 }
 
 
@@ -378,6 +490,8 @@ VariableCollection::VariableCollection(IDebugController* controller)
     connect(locals(), SIGNAL(collapsed()), SLOT(updateAutoUpdate()));
     connect(watches(), SIGNAL(expanded()), SLOT(updateAutoUpdate()));
     connect(watches(), SIGNAL(collapsed()), SLOT(updateAutoUpdate()));
+    connect(autos(), SIGNAL(expanded()), SLOT(updateAutoUpdate()));
+    connect(autos(), SIGNAL(collapsed()), SLOT(updateAutoUpdate()));
 }
 
 void VariableCollection::variableWidgetHidden()
@@ -404,6 +518,7 @@ void VariableCollection::updateAutoUpdate(IDebugSession* session)
         QFlags<IVariableController::UpdateType> t = IVariableController::UpdateNone;
         if (locals()->isExpanded()) t |= IVariableController::UpdateLocals;
         if (watches()->isExpanded()) t |= IVariableController::UpdateWatches;
+        if (autos()->isExpanded()) t |= IVariableController::UpdateAutos;
         session->variableController()->setAutoUpdate(t);
     }
 }
@@ -456,8 +571,9 @@ textHintRequested(const KTextEditor::Cursor& cursor, QString&)
 
     KTextEditor::Document* doc = view->document();
 
-    QString expression = currentSession()->variableController()->expressionUnderCursor(doc, cursor);
-
+    QString expression = currentSession()->variableController()->
+            expressionAtPosition(doc->line(cursor.line()), cursor.column());
+   
     if (expression.isEmpty())
         return;
 

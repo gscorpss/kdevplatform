@@ -174,12 +174,29 @@ private:
     void fetchMoreChildren() {}
 };
 
+class KDEVPLATFORMDEBUGGER_EXPORT Autos : public TreeItem
+{
+public:
+    Autos(TreeModel* model, TreeItem* parent);
+    
+    void update();
+    
+    friend class VariableCollection;
+    
+private:
+    QStringList prev_autos_;
+    QStringList curr_autos_;
+    
+    void fetchMoreChildren() {}    
+};
+
 class KDEVPLATFORMDEBUGGER_EXPORT VariablesRoot : public TreeItem
 {
 public:
     VariablesRoot(TreeModel* model);
 
     Watches *watches() const { return watches_; }
+    Autos *autos() const { return autos_; }
     Locals *locals(const QString &name = "Locals");
     QHash<QString, Locals*> allLocals() const;
 
@@ -189,6 +206,7 @@ public:
 
 private:
     Watches *watches_;
+    Autos *autos_;
     QHash<QString, Locals*> locals_;
 };
 
@@ -202,6 +220,7 @@ public:
 
     VariablesRoot* root() const { return universe_; }
     Watches* watches() const { return universe_->watches(); }
+    Autos* autos() const { return universe_->autos(); }
     Locals* locals(const QString &name = "Locals") const { return universe_->locals(name); }
     QHash<QString, Locals*> allLocals() const { return universe_->allLocals(); }
 
