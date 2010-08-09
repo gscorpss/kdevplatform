@@ -48,8 +48,7 @@ namespace KDevelop {
 
 IDebugSession* currentSession()
 {
-    IDebugController* dc = ICore::self()->debugController();
-    return dc ? dc->currentSession() : 0;
+    return ICore::self()->debugController()->currentSession();
 }
 
 IDebugSession::DebuggerState currentSessionState()
@@ -146,10 +145,10 @@ void Variable::resetChanged()
 
 Variable::format_t Variable::str2format(const QString& str)
 {
-    if(str=="Binary" || str=="binary")          return Binary;
-    if(str=="Octal" || str=="octal")            return Octal;
-    if(str=="Decimal" || str=="decimal")        return Decimal;
-    if(str=="Hexadecimal" || str=="hexadecimal")return Hexadecimal;
+    if(str == "Binary" || str == "binary")          return Binary;
+    if(str == "Octal" || str == "octal")            return Octal;
+    if(str == "Decimal" || str == "decimal")        return Decimal;
+    if(str == "Hexadecimal" || str == "hexadecimal")return Hexadecimal;
 
     return Natural; // maybe most reasonable default
 }
@@ -347,11 +346,12 @@ QStringList getAutos(IDebugSession* session=0)
     QStringList result;
     
     if(!session) session = currentSession();
-    if(!session) return result;
+    if(!session)
+	    return result;
 
-    const QString& file=session->currentFile();
-    int line=session->currentLine();
-    if(file.isEmpty() || line<0) return result;
+    const QString& file = session->currentFile();
+    int line = session->currentLine();
+    if( file.isEmpty() || line < 0 ) return result;
 
     // get a current line text
     QString lineText;
@@ -368,15 +368,15 @@ QStringList getAutos(IDebugSession* session=0)
 
     foreach(DUChainUtils::DeclPosPair pair, DUChainUtils::usesInLine(file, line) )
     {
-        Declaration* pDecl=pair.first;
-        int column=pair.second;
+        Declaration* pDecl = pair.first;
+        int column = pair.second;
 
-        if(pDecl && pDecl->kind()==Declaration::Instance &&
+        if(pDecl && pDecl->kind() == Declaration::Instance &&
             !pDecl->isFunctionDeclaration())
         {
-            QString expr = session->variableController()->expressionAtPosition(lineText,column);
+            QString expr = session->variableController()->expressionAtPosition(lineText, column);
             if(expr.isEmpty())
-                expr= pDecl->identifier().toString();  // should not get here but to be sure we do our best..
+                expr = pDecl->identifier().toString();  // should not get here but to be sure we do our best..
                 
             if(!expr.isEmpty() && !result.contains(expr))
                 result << expr; // should be unique
@@ -389,7 +389,7 @@ QStringList getAutos(IDebugSession* session=0)
 // updates autos list to display previous and current line references
 void Autos::update()
 {
-    QStringList new_autos=getAutos();
+    QStringList new_autos = getAutos();
     
     // basically we need to delete variables present only in prev_autos_
     // and show curr_autos_ and new_autos
@@ -412,7 +412,7 @@ void Autos::update()
 
     // delete old variables (not in curr_autos_ 
     for (int i = 0; i < childItems.size(); ++i) {
-        KDevelop::Variable* v = static_cast<KDevelop::Variable*>(child(i));
+        KDevelop::Variable* v = static_cast<KDevelop::Variable*>( child(i) );
         if (!curr_autos_.contains(v->expression()) && !new_autos.contains(v->expression())) {
             removeChild(i);
             --i;
@@ -431,7 +431,7 @@ void Autos::update()
     // call to update variables
     foreach (TreeItem *i, childItems) {
         Q_ASSERT(dynamic_cast<Variable*>(i));
-        Variable* var=static_cast<Variable*>(i);
+        Variable* var = static_cast<Variable*>(i);
         var->setChanged(false);
         var->attachMaybe();
     }

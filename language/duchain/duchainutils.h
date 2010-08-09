@@ -71,7 +71,7 @@ namespace DUChainUtils {
 
   typedef QPair<Declaration*,int> DeclPosPair;
   /// Returns a list of declarations referenced in the specified line and their positions in line
-  KDEVPLATFORMLANGUAGE_EXPORT QList< DeclPosPair > usesInLine(const KUrl& url, int line, DUContext* ctx=NULL);
+  KDEVPLATFORMLANGUAGE_EXPORT QList< DeclPosPair > usesInLine(const KUrl& url, int line, DUContext* ctx = 0);
   
   
   class KDEVPLATFORMLANGUAGE_EXPORT DUChainItemFilter {
