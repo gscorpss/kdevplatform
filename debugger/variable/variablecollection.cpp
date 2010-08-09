@@ -48,8 +48,8 @@ namespace KDevelop {
 
 IDebugSession* currentSession()
 {
-    IDebugController* dc= ICore::self()->debugController();
-    return (dc)?dc->currentSession():NULL;
+    IDebugController* dc = ICore::self()->debugController();
+    return dc ? dc->currentSession() : 0;
 }
 
 IDebugSession::DebuggerState currentSessionState()
@@ -342,11 +342,11 @@ Autos::Autos(TreeModel* model, TreeItem* parent)
     setData(QVector<QVariant>() << "Context autos" << QString());
 }
 
-QStringList getAutos(IDebugSession* session=NULL)
+QStringList getAutos(IDebugSession* session=0)
 {
     QStringList result;
     
-    if(!session) session=currentSession();
+    if(!session) session = currentSession();
     if(!session) return result;
 
     const QString& file=session->currentFile();
