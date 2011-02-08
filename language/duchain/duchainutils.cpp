@@ -353,7 +353,9 @@ QList< DUChainUtils::DeclPosPair > DUChainUtils::usesInLine(const KUrl& url, int
 
   if(!ctx)
   {
-    ctx = topctx->findContextAt( SimpleCursor(line, 0) );
+    CursorInRevision cursor = topctx->transformToLocalRevision( SimpleCursor(line, 0) );
+    
+    ctx = topctx->findContextAt( cursor);
     if(!ctx)
 		return result;
   }

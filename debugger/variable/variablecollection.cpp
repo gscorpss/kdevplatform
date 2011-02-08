@@ -349,7 +349,7 @@ QStringList getAutos(IDebugSession* session=0)
     if(!session)
 	    return result;
 
-    const QString& file = session->currentFile();
+    const KUrl& file = session->currentUrl();
     int line = session->currentLine();
     if( file.isEmpty() || line < 0 ) return result;
 
