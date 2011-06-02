@@ -358,6 +358,16 @@ struct DocumentControllerPrivate {
                     break;
                 }
             }
+            */
+
+            //don't reopen if file is already open *and* active
+            //if pen in the same area we open it a second time, just as a browser would do
+            Sublime::View *partView = 0;
+            if (uiController->activeSublimeWindow()->activeView() &&
+                uiController->activeSublimeWindow()->activeView()->document() == sdoc) {
+                partView = uiController->activeSublimeWindow()->activeView();
+            }
+            
             bool addView = false, applyRange = true;
             if (!partView)
             {
@@ -365,9 +375,6 @@ struct DocumentControllerPrivate {
                 partView = sdoc->createView();
                 addView = true;
             }
-            */
-            bool applyRange = true;
-            Sublime::View *partView = sdoc->createView();
 
             
             KDevelop::TextView* textView = dynamic_cast<KDevelop::TextView*>(partView);
@@ -381,7 +388,7 @@ struct DocumentControllerPrivate {
                 textView->setInitialRange(range);
             }
             
-            if(true /*addView*/) {
+            if(addView) {
                 // This code is never executed when restoring session on startup,
                 // only when opening a file manually
 
