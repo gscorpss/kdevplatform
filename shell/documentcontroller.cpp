@@ -494,7 +494,7 @@ struct DocumentControllerPrivate {
                         // this method places the tab according to openAfterCurrent()
                         area->addView(partView, previousView);
                         
-                        if (previousView) {
+                        if (previousView && !activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)) {
                             area->closeView(previousView);
                         }
                     //}

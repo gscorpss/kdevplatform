@@ -53,7 +53,8 @@ public:
     {
         DefaultMode = 0,            /**Activate document and create a view if no other flags passed.*/
         DoNotActivate = 1,          /**Don't activate the Document.*/
-        DoNotCreateView = 2         /**Don't create and show the view for the Document.*/
+        DoNotCreateView = 2,        /**Don't create and show the view for the Document.*/
+        DoNotReplaceCurrentView = 4 /**Don't close the currently open view (ie. create a new tab).*/
     };
     Q_DECLARE_FLAGS(DocumentActivationParams, DocumentActivation)
 
