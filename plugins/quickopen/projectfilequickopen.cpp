@@ -52,9 +52,12 @@ QString ProjectFileData::htmlDescription() const {
   return "<small><small>" + i18n("Project") + ' ' + m_file.m_project.str() + /*", " + i18n("path") + totalUrl().toLocalFile() +*/ "</small></small>"; //Show only the path because of limited space
 }
 
-bool ProjectFileData::execute( QString& /*filterText*/, Qt::KeyboardModifiers /*modifiers*/ ) {
-  IOpenWith::openFiles(KUrl::List() << totalUrl());
-  ICore::self()->documentController()->openDocument( totalUrl() );
+bool ProjectFileData::execute( QString& /*filterText*/, Qt::KeyboardModifiers modifiers ) {
+  IDocumentController::DocumentActivationParams activationParams(IDocumentController::DefaultMode);
+  if(modifiers.testFlag(Qt::ControlModifier)) {
+      activationParams = IDocumentController::DoNotReplaceCurrentView;
+  }
+  ICore::self()->documentController()->openDocument( totalUrl(), KTextEditor::Range::invalid(), activationParams );
   return true;
 }
 

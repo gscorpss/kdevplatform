@@ -141,7 +141,7 @@ QString DUChainItemData::htmlDescription() const {
   return ret;
 }
 
-bool DUChainItemData::execute( QString& /*filterText*/, Qt::KeyboardModifiers /*modifiers*/ ) {
+bool DUChainItemData::execute( QString& /*filterText*/, Qt::KeyboardModifiers modifiers ) {
   KDevelop::DUChainReadLocker lock( DUChain::lock() );
   Declaration* decl = m_item.m_item.data();
   if(!decl)
@@ -162,7 +162,11 @@ bool DUChainItemData::execute( QString& /*filterText*/, Qt::KeyboardModifiers /*
   }
 
   lock.unlock();
-  ICore::self()->documentController()->openDocument( url, cursor );
+  IDocumentController::DocumentActivationParams activationParams(IDocumentController::DefaultMode);
+  if(modifiers.testFlag(Qt::ControlModifier)) {
+      activationParams = IDocumentController::DoNotReplaceCurrentView;
+  }
+  ICore::self()->documentController()->openDocument( url, cursor, activationParams );
   return true;
 }
 

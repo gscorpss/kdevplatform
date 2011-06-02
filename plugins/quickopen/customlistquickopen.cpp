@@ -35,8 +35,12 @@ QString CustomItemData::htmlDescription() const {
   return "<small><small>" + m_item.m_shortText + "</small></small>";
 }
 
-bool CustomItemData::execute( QString& /*filterText*/, Qt::KeyboardModifiers /*modifiers*/ ) {
-  ICore::self()->documentController()->openDocument( m_item.m_executeTargetUrl, m_item.m_executeTargetPosition.textCursor() );
+bool CustomItemData::execute( QString& /*filterText*/, Qt::KeyboardModifiers modifiers ) {
+  IDocumentController::DocumentActivationParams activationParams(IDocumentController::DefaultMode);
+  if(modifiers.testFlag(Qt::ControlModifier)) {
+      activationParams = IDocumentController::DoNotReplaceCurrentView;
+  }
+  ICore::self()->documentController()->openDocument( m_item.m_executeTargetUrl, m_item.m_executeTargetPosition.textCursor(), activationParams );
   return true;
 }
 
