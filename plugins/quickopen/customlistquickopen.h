@@ -45,7 +45,7 @@ class CustomItemData : public KDevelop::QuickOpenDataBase {
     virtual QString text() const;
     virtual QString htmlDescription() const;
 
-    bool execute( QString& filterText );
+    bool execute( QString& filterText, Qt::KeyboardModifiers modifiers );
 
     virtual bool isExpandable() const;
     virtual QWidget* expandingWidget() const;

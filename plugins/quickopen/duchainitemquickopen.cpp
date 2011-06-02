@@ -141,7 +141,7 @@ QString DUChainItemData::htmlDescription() const {
   return ret;
 }
 
-bool DUChainItemData::execute( QString& /*filterText*/ ) {
+bool DUChainItemData::execute( QString& /*filterText*/, Qt::KeyboardModifiers /*modifiers*/ ) {
   KDevelop::DUChainReadLocker lock( DUChain::lock() );
   Declaration* decl = m_item.m_item.data();
   if(!decl)

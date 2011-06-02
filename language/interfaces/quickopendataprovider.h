@@ -106,7 +106,7 @@ class KDEVPLATFORMLANGUAGE_EXPORT QuickOpenDataBase : public KShared {
      *                   line-edit will be changed according to the new text.
      * @return Whether the dialog should be closed.
      * */
-    virtual bool execute( QString& filterText ) = 0;
+    virtual bool execute( QString& filterText, Qt::KeyboardModifiers modifiers ) = 0;
 
     /**
      * Return true here if this data-item should be expandable with

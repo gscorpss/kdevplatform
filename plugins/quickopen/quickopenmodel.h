@@ -75,7 +75,7 @@ class QuickOpenModel : public ExpandingWidgetModel {
      * into the line-edit. That way items may execute by changing the content
      * of the line-edit.
      * */
-    bool execute( const QModelIndex& index, QString& filterText );
+    bool execute( const QModelIndex& index, QString& filterText, Qt::KeyboardModifiers modifiers);
 
     //The expandingwidgetmodel needs access to the tree-view
     void setTreeView( QTreeView* view );

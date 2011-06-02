@@ -35,7 +35,7 @@ QString CustomItemData::htmlDescription() const {
   return "<small><small>" + m_item.m_shortText + "</small></small>";
 }
 
-bool CustomItemData::execute( QString& /*filterText*/ ) {
+bool CustomItemData::execute( QString& /*filterText*/, Qt::KeyboardModifiers /*modifiers*/ ) {
   ICore::self()->documentController()->openDocument( m_item.m_executeTargetUrl, m_item.m_executeTargetPosition.textCursor() );
   return true;
 }

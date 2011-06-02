@@ -397,7 +397,7 @@ int QuickOpenModel::contextMatchQuality(const QModelIndex & /*index*/) const {
   return -1;
 }
 
-bool QuickOpenModel::execute( const QModelIndex& index, QString& filterText )
+bool QuickOpenModel::execute( const QModelIndex& index, QString& filterText, Qt::KeyboardModifiers modifiers )
 {
   kDebug() << "executing model";
   if( !index.isValid() ) {
@@ -408,7 +408,7 @@ bool QuickOpenModel::execute( const QModelIndex& index, QString& filterText )
   QuickOpenDataPointer item = getItem( index.row() );
 
   if( item ) {
-    return item->execute( filterText );
+    return item->execute( filterText, modifiers );
   }else{
     kWarning() << "Got no item for row " << index.row() << " ";
   }

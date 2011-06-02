@@ -47,7 +47,7 @@ class DUChainItemData : public KDevelop::QuickOpenDataBase {
     virtual QString htmlDescription() const;
     virtual QList<QVariant> highlighting() const;
 
-    bool execute( QString& filterText );
+    bool execute( QString& filterText, Qt::KeyboardModifiers modifiers );
 
     virtual bool isExpandable() const;
     virtual QWidget* expandingWidget() const;

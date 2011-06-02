@@ -512,12 +512,12 @@ void QuickOpenWidget::currentChanged( const QItemSelection& /*current*/, const Q
 
 void QuickOpenWidget::accept() {
   QString filterText = o.searchLine->text();
-  m_model->execute( o.list->currentIndex(), filterText );
+  m_model->execute( o.list->currentIndex(), filterText, QApplication::keyboardModifiers() );
 }
 
 void QuickOpenWidget::doubleClicked ( const QModelIndex & index ) {
   QString filterText = o.searchLine->text();
-  if(  m_model->execute( index, filterText ) )
+  if(  m_model->execute( index, filterText, QApplication::keyboardModifiers() ) )
     emit ready();
   else if( filterText != o.searchLine->text() )
     o.searchLine->setText( filterText );
@@ -663,7 +663,7 @@ bool QuickOpenWidget::eventFilter ( QObject * watched, QEvent * event )
           //which kills the quickopen widget.
           QPointer<QObject> stillExists(this);
           
-          if( m_model->execute( o.list->currentIndex(), filterText ) ) {
+          if( m_model->execute( o.list->currentIndex(), filterText, keyEvent->modifiers() ) ) {
             
             if(!stillExists)
               return true;
