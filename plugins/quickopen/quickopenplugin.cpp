@@ -745,6 +745,18 @@ void QuickOpenPlugin::createActionsForMainWindow(Sublime::MainWindow* /*window*/
     m_quickOpenDefinition->setShortcut( Qt::CTRL | Qt::Key_Comma );
     connect(m_quickOpenDefinition, SIGNAL(triggered(bool)), this, SLOT(quickOpenDefinition()), Qt::QueuedConnection);
 
+    KAction* quickOpenDeclaration = actions.addAction("quick_open_jump_declaration_new_tab");
+    quickOpenDeclaration->setText( i18n("Jump to Declaration in new Tab") );
+    quickOpenDeclaration->setIcon( KIcon("go-jump-declaration" ) );
+    quickOpenDeclaration->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_Period );
+    connect(quickOpenDeclaration, SIGNAL(triggered(bool)), this, SLOT(quickOpenDeclarationNewTab()));
+
+    KAction* quickOpenDefinition = actions.addAction("quick_open_jump_definition_new_tab");
+    quickOpenDefinition->setText( i18n("Jump to Definition in new Tab") );
+    quickOpenDefinition->setIcon( KIcon("go-jump-definition" ) );
+    quickOpenDefinition->setShortcut( Qt::CTRL | Qt::SHIFT | Qt::Key_Comma );
+    connect(quickOpenDefinition, SIGNAL(triggered(bool)), this, SLOT(quickOpenDefinitionNewTab()));
+
     KAction* quickOpenLine = actions.addAction("quick_open_line");
     quickOpenLine->setText( i18n("Embedded Quick Open") );
 //     quickOpenLine->setShortcut( Qt::CTRL | Qt::ALT | Qt::Key_E );
@@ -964,7 +976,7 @@ bool QuickOpenPlugin::removeProvider( KDevelop::QuickOpenDataProviderBase* provi
   return true;
 }
 
-void QuickOpenPlugin::quickOpenDeclaration()
+void QuickOpenPlugin::quickOpenDeclaration(IDocumentController::DocumentActivationParams activationParams)
 {
   if(jumpToSpecialObject())
     return;
@@ -987,7 +999,16 @@ void QuickOpenPlugin::quickOpenDeclaration()
   }
 
   lock.unlock();
-  core()->documentController()->openDocument(KUrl(u.str()), c.textCursor());
+  core()->documentController()->openDocument(KUrl(u.str()), c.textCursor(), activationParams);
+}
+
+void QuickOpenPlugin::quickOpenDeclaration()
+{
+  quickOpenDeclaration(IDocumentController::DefaultMode);
+}
+void QuickOpenPlugin::quickOpenDeclarationNewTab()
+{
+  quickOpenDeclaration(IDocumentController::DoNotReplaceCurrentView);
 }
 
 ///Returns all languages for that url that have a language support, and prints warnings for other ones.
@@ -1051,7 +1072,7 @@ bool QuickOpenPlugin::jumpToSpecialObject()
   return false;
 }
 
-void QuickOpenPlugin::quickOpenDefinition()
+void QuickOpenPlugin::quickOpenDefinition(IDocumentController::DocumentActivationParams activationParams)
 {
   if(jumpToSpecialObject())
     return;
@@ -1081,9 +1102,17 @@ void QuickOpenPlugin::quickOpenDefinition()
   }
 
   lock.unlock();
-  core()->documentController()->openDocument(KUrl(u.str()), c.textCursor());
+  KDevelop::ICore::self()->documentController()->openDocument(KUrl(u.str()), c.textCursor(), activationParams);
+}
+void QuickOpenPlugin::quickOpenDefinition()
+{
+  quickOpenDefinition(IDocumentController::DefaultMode);
 }
 
+void QuickOpenPlugin::quickOpenDefinitionNewTab()
+{
+  quickOpenDefinition(IDocumentController::DoNotReplaceCurrentView);
+}
 
 void QuickOpenPlugin::quickOpenNavigate()
 {

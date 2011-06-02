@@ -28,6 +28,7 @@
 #include <QtGui/QMenu>
 #include <language/interfaces/quickopendataprovider.h>
 #include "ui_quickopen.h"
+#include <interfaces/idocumentcontroller.h>
 
 class KAction;
 
@@ -90,7 +91,9 @@ public slots:
     void quickOpenFunction();
     void quickOpenClass();
     void quickOpenDeclaration();
+    void quickOpenDeclarationNewTab();
     void quickOpenDefinition();
+    void quickOpenDefinitionNewTab();
     void quickOpenNavigate();
     void quickOpenNavigateFunctions();
 
@@ -100,6 +103,8 @@ public slots:
 private slots:
     void storeScopes( const QStringList& );
     void storeItems( const QStringList& );
+    void quickOpenDeclaration(KDevelop::IDocumentController::DocumentActivationParams activationParams);
+    void quickOpenDefinition(KDevelop::IDocumentController::DocumentActivationParams activationParams);
 
 private:
     friend class QuickOpenLineEdit;
