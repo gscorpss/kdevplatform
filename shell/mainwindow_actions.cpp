@@ -34,6 +34,8 @@ Boston, MA 02110-1301, USA.
 #include "mainwindow.h"
 #include "loadedpluginsdialog.h"
 #include <interfaces/ipartcontroller.h>
+#include <sublime/area.h>
+#include <sublime/emptydocument.h>
 
 namespace KDevelop {
 
@@ -133,6 +135,15 @@ void MainWindowPrivate::split(Qt::Orientation orientation)
 void MainWindowPrivate::toggleFullScreen(bool fullScreen)
 {
     KToggleFullScreenAction::setFullScreen( m_mainWindow, fullScreen );
+}
+
+void MainWindowPrivate::newTab()
+{
+    Sublime::Area *area = Core::self()->uiControllerInternal()->activeArea();
+    Sublime::EmptyDocument* doc = new Sublime::EmptyDocument(Core::self()->uiControllerInternal()->controller());
+    Sublime::View* view = doc->createView();
+    area->addView(view);
+    Core::self()->uiControllerInternal()->activeSublimeWindow()->activateView(view);
 }
 
 void MainWindowPrivate::fileNew()

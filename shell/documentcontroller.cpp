@@ -347,6 +347,7 @@ struct DocumentControllerPrivate {
         
         if (!activationParams.testFlag(IDocumentController::DoNotCreateView))
         {
+            /* browser-like-tabs commented out, because we *always* want to create a new view
             //find a view if there's one already opened in this area
             Sublime::View *partView = 0;
             foreach (Sublime::View *view, sdoc->views())
@@ -364,6 +365,10 @@ struct DocumentControllerPrivate {
                 partView = sdoc->createView();
                 addView = true;
             }
+            */
+            bool applyRange = true;
+            Sublime::View *partView = sdoc->createView();
+
             
             KDevelop::TextView* textView = dynamic_cast<KDevelop::TextView*>(partView);
             if(textView && textView->textView()) {
@@ -376,10 +381,11 @@ struct DocumentControllerPrivate {
                 textView->setInitialRange(range);
             }
             
-            if(addView) {
+            if(true /*addView*/) {
                 // This code is never executed when restoring session on startup,
                 // only when opening a file manually
 
+                /* browser-like-tabs commented out, because buddy concept makes no sense with it
                 Sublime::View* buddyView = 0;
                 bool placeAfterBuddy = true;
                 if(Core::self()->uiControllerInternal()->arrangeBuddies()) {
@@ -471,13 +477,21 @@ struct DocumentControllerPrivate {
                         }
                     }
                     else {
+                    */
                         // Opening as last tab won't disturb our buddies
                         // Same, if buddies are disabled, we needn't care about them.
+                        
+                        Sublime::View* previousView = uiController->activeSublimeWindow()->activeView();
+                        
 
                         // this method places the tab according to openAfterCurrent()
-                        area->addView(partView, activeView);
-                    }
-                }
+                        area->addView(partView, previousView);
+                        
+                        if (previousView) {
+                            area->closeView(previousView);
+                        }
+                    //}
+                //}
             }
             
             if (!activationParams.testFlag(IDocumentController::DoNotActivate))
