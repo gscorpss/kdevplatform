@@ -248,7 +248,11 @@ bool BrowseManager::eventFilter(QObject * watched, QEvent * event) {
 //                         view->setCursorPosition(textCursor);
 //                         return false;
                     }else if(mouseEvent->type() == QEvent::MouseButtonRelease && textCursor == m_buttonPressPosition) {
-                        ICore::self()->documentController()->openDocument(jumpTo.first, jumpTo.second.textCursor());
+                        IDocumentController::DocumentActivationParams activationParams(IDocumentController::DefaultMode);
+                        if(mouseEvent->modifiers().testFlag(Qt::ShiftModifier)) {
+                            activationParams = IDocumentController::DoNotReplaceCurrentView;
+                        }
+                        ICore::self()->documentController()->openDocument(jumpTo.first, jumpTo.second.textCursor(), activationParams);
 //                         event->accept();
 //                         return true;
                     }
