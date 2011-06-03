@@ -334,13 +334,6 @@ void MainWindowPrivate::setupActions()
     connect( action, SIGNAL( triggered( bool ) ),  SLOT( viewAddNewToolView() ) );
     action->setToolTip( i18n( "Add Tool View" ) );
     action->setWhatsThis( i18n( "<b>Add Tool View</b><p>Adds a new tool view to this window.</p>" ) );
-
-    action = actionCollection()->addAction( "new_tab" );
-    action->setIcon(KIcon("window-new"));
-    action->setShortcut( Qt::CTRL + Qt::Key_T );
-    action->setText( i18n( "New &Tab" ) );
-    connect( action, SIGNAL( triggered( bool ) ),  SLOT( newTab() ) );
-    action->setToolTip( i18n( "Open a new Tab" ) );
 }
 
 void MainWindowPrivate::toggleArea(bool b)

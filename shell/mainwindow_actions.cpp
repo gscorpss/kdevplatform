@@ -148,7 +148,9 @@ void MainWindowPrivate::newTab()
 
 void MainWindowPrivate::fileNew()
 {
-    Core::self()->documentControllerInternal()->openDocument(DocumentController::nextEmptyDocumentUrl());
+    Core::self()->documentControllerInternal()->openDocument(DocumentController::nextEmptyDocumentUrl(),
+                                                             KTextEditor::Range::invalid(),
+                                                             IDocumentController::DoNotReplaceCurrentView);
 }
 
 void MainWindowPrivate::viewAddNewToolView()
