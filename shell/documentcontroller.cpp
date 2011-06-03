@@ -392,7 +392,8 @@ struct DocumentControllerPrivate {
                 // This code is never executed when restoring session on startup,
                 // only when opening a file manually
 
-                /* browser-like-tabs commented out, because buddy concept makes no sense with it
+                Sublime::View* previousView = uiController->activeSublimeWindow()->activeView();
+
                 Sublime::View* buddyView = 0;
                 bool placeAfterBuddy = true;
                 if(Core::self()->uiControllerInternal()->arrangeBuddies()) {
@@ -484,24 +485,21 @@ struct DocumentControllerPrivate {
                         }
                     }
                     else {
-                    */
                         // Opening as last tab won't disturb our buddies
                         // Same, if buddies are disabled, we needn't care about them.
-                        
-                        Sublime::View* previousView = uiController->activeSublimeWindow()->activeView();
                         
 
                         // this method places the tab according to openAfterCurrent()
                         area->addView(partView, previousView);
-                        
-                        if (previousView && !activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)) {
-                            if (!area->closeView(previousView)) {
-                                area->removeView(partView);
-                                return false;
-                            }
-                        }
-                    //}
-                //}
+                    }
+                }
+                
+                if (previousView && !activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)) {
+                    if (!area->closeView(previousView)) {
+                        area->removeView(partView);
+                        return false;
+                    }
+                }
             }
             
             if (!activationParams.testFlag(IDocumentController::DoNotActivate))
