@@ -252,7 +252,11 @@ void ProjectManagerView::locateCurrentDocument()
 
 void ProjectManagerView::openUrl( const KUrl& url )
 {
-    IOpenWith::openFiles(KUrl::List() << url);
+    IDocumentController::DocumentActivation mode = IDocumentController::DefaultMode;
+    if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)) {
+        mode = IDocumentController::DoNotReplaceCurrentView;
+    }
+    ICore::self()->documentController()->openDocument( url, KTextEditor::Range::invalid(), mode );
 }
 
 void ProjectManagerView::filterChanged(const QString &text)
