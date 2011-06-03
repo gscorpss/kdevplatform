@@ -495,8 +495,16 @@ struct DocumentControllerPrivate {
                 }
 
                 if(Core::self()->uiControllerInternal()->browserLikeTabs() && previousView) {
+                    IDocument* previsousDoc = dynamic_cast<IDocument*>(previousView->document());
+                    bool modified = false;
+                    if (previsousDoc) {
+                        if (previsousDoc->state() == IDocument::Modified || previsousDoc->state() == IDocument::DirtyAndModified ) {
+                            modified = true;
+                        }
+                    }
                     if (!activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)
                          && !previousView->isSticky()
+                         && !modified
                        ) {
                         if (!area->closeView(previousView)) {
                             area->removeView(partView);
