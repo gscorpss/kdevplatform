@@ -495,7 +495,10 @@ struct DocumentControllerPrivate {
                         area->addView(partView, previousView);
                         
                         if (previousView && !activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)) {
-                            area->closeView(previousView);
+                            if (!area->closeView(previousView)) {
+                                area->removeView(partView);
+                                return false;
+                            }
                         }
                     //}
                 //}
