@@ -35,6 +35,7 @@ Boston, MA 02110-1301, USA.
 #include "loadedpluginsdialog.h"
 #include <interfaces/ipartcontroller.h>
 #include <sublime/area.h>
+#include <sublime/view.h>
 
 namespace KDevelop {
 
@@ -209,6 +210,12 @@ void MainWindowPrivate::reloadAll()
     foreach ( IDocument* doc, Core::self()->documentController()->openDocuments() ) {
         doc->reload();
     }
+}
+
+void MainWindowPrivate::viewMarkSticky()
+{
+    Sublime::View* view = m_mainWindow->activeView();
+    view->setSticky(!view->isSticky());
 }
 
 }

@@ -74,11 +74,15 @@ public:
 
     void notifyPositionChanged(int newPositionInArea);
 
+    void setSticky(bool sticky);
+    bool isSticky() const;
+
 Q_SIGNALS:
     void raise(Sublime::View*);
     /// Notify that the status for this document has changed
     void statusChanged(Sublime::View*);
     void positionChanged(Sublime::View*, int);
+    void stickyChanged(Sublime::View*);
 
 public Q_SLOTS:
     void requestRaise();

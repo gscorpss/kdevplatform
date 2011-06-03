@@ -88,6 +88,7 @@ private Q_SLOTS:
     void documentTitleChanged(Sublime::Document* doc);
     void statusIconChanged(Sublime::Document*);
     void statusChanged(Sublime::View *view);
+    void stickyChanged(Sublime::View* view);
     void closeRequest(int idx);
     void tabMoved(int from, int to);
     void wheelScroll(int);

@@ -83,6 +83,7 @@ class ContainerTabBar : public KTabBar {
 };
 
 struct ContainerPrivate {
+    void updateIcon(View *view);
     QMap<QWidget*, View*> viewForWidget;
 
     ContainerTabBar *tabBar;
@@ -277,8 +278,10 @@ void Container::addWidget(View *view, int position)
     d->tabBar->setMinimumHeight(d->tabBar->sizeHint().height());
     
     connect(view, SIGNAL(statusChanged(Sublime::View*)), this, SLOT(statusChanged(Sublime::View*)));
+    connect(view, SIGNAL(stickyChanged(Sublime::View*)), this, SLOT(stickyChanged(Sublime::View*)));
     connect(view->document(), SIGNAL(statusIconChanged(Sublime::Document*)), this, SLOT(statusIconChanged(Sublime::Document*)));
     connect(view->document(), SIGNAL(titleChanged(Sublime::Document*)), this, SLOT(documentTitleChanged(Sublime::Document*)));
+    d->updateIcon(view);
 }
 
 void Container::statusChanged(Sublime::View* view)
@@ -286,6 +289,22 @@ void Container::statusChanged(Sublime::View* view)
     d->statusCorner->setText(view->viewStatus());
 }
 
+void ContainerPrivate::updateIcon(View* view)
+{
+    int tabIndex = stack->indexOf(view->widget());
+    if (tabIndex != -1) {
+        QIcon statusIcon = view->document()->statusIcon();
+        if (statusIcon.isNull() && view->isSticky()) {
+            statusIcon = KIcon("document-edit");
+        }
+        tabBar->setTabIcon(tabIndex, statusIcon);
+    }
+}
+
+void Container::stickyChanged(View* view)
+{
+    d->updateIcon(view);
+}
 
 void Container::statusIconChanged(Document* doc)
 {
@@ -293,10 +312,7 @@ void Container::statusIconChanged(Document* doc)
     while (it.hasNext()) {
         if (it.next().value()->document() == doc) {
             d->fileStatus->setPixmap( doc->statusIcon().pixmap( QSize( 16,16 ) ) );
-            int tabIndex = d->stack->indexOf(it.key());
-            if (tabIndex != -1) {
-                d->tabBar->setTabIcon(tabIndex, doc->statusIcon());
-            }
+            d->updateIcon(it.value());
             break;
         }
     }

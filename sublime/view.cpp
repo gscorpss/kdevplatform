@@ -38,13 +38,14 @@ public:
     QWidget *widget;
     void unsetWidget();
     View::WidgetOwnership ws;
+    bool sticky;
 
 private:
     View *view;
 };
 
 ViewPrivate::ViewPrivate(View * v)
-    :doc(0), widget(0), view(v)
+    :doc(0), widget(0), sticky(false), view(v)
 {
 }
 
@@ -139,6 +140,18 @@ void View::notifyPositionChanged(int newPositionInArea)
 {
     emit positionChanged(this, newPositionInArea);
 }
+
+void View::setSticky(bool sticky)
+{
+    d->sticky = sticky;
+    emit stickyChanged(this);
+}
+
+bool View::isSticky() const
+{
+    return d->sticky;
+}
+
 
 }
 

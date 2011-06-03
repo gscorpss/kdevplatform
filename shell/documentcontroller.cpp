@@ -493,8 +493,11 @@ struct DocumentControllerPrivate {
                         area->addView(partView, previousView);
                     }
                 }
-                if(Core::self()->uiControllerInternal()->browserLikeTabs()) {
-                    if (previousView && !activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)) {
+
+                if(Core::self()->uiControllerInternal()->browserLikeTabs() && previousView) {
+                    if (!activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)
+                         && !previousView->isSticky()
+                       ) {
                         if (!area->closeView(previousView)) {
                             area->removeView(partView);
                             return false;

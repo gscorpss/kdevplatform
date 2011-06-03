@@ -125,6 +125,8 @@ public Q_SLOTS:
 
     /// reload all open documents
     void reloadAll();
+    
+    void viewMarkSticky();
 
 private:
     KActionCollection *actionCollection();
