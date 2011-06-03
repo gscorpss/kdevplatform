@@ -97,6 +97,7 @@ struct ControllerPrivate {
     QVector< QList<Area*> > mainWindowAreas;
     bool openAfterCurrent;
     bool arrangeBuddies;
+    bool browserLikeTabs;
 };
 
 
@@ -400,6 +401,7 @@ void Controller::loadSettings()
     KConfigGroup uiGroup = KGlobal::config()->group("UiSettings");
     d->openAfterCurrent = (uiGroup.readEntry("TabBarOpenAfterCurrent", 1) == 1);
     d->arrangeBuddies = (uiGroup.readEntry("TabBarArrangeBuddies", 1) == 1);
+    d->browserLikeTabs = (uiGroup.readEntry("TabBarBrowserLike", 0) == 1);
 }
 
 bool Controller::openAfterCurrent() const
@@ -410,6 +412,11 @@ bool Controller::openAfterCurrent() const
 bool Controller::arrangeBuddies() const
 {
     return d->arrangeBuddies;
+}
+
+bool Controller::browserLikeTabs() const
+{
+    return d->browserLikeTabs;
 }
 
 }

@@ -149,6 +149,7 @@ public:
 
     bool openAfterCurrent() const;
     bool arrangeBuddies() const;
+    bool browserLikeTabs() const;
 
     void loadSettings();
 public Q_SLOTS:

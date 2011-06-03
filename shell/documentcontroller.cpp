@@ -347,25 +347,25 @@ struct DocumentControllerPrivate {
         
         if (!activationParams.testFlag(IDocumentController::DoNotCreateView))
         {
-            /* browser-like-tabs commented out, because we *always* want to create a new view
-            //find a view if there's one already opened in this area
             Sublime::View *partView = 0;
-            foreach (Sublime::View *view, sdoc->views())
-            {
-                if (area->views().contains(view) && area->indexOf(view) == area->indexOf(uiController->activeSublimeWindow()->activeView()))
-                {
-                    partView = view;
-                    break;
-                }
-            }
-            */
 
-            //don't reopen if file is already open *and* active
-            //if pen in the same area we open it a second time, just as a browser would do
-            Sublime::View *partView = 0;
-            if (uiController->activeSublimeWindow()->activeView() &&
-                uiController->activeSublimeWindow()->activeView()->document() == sdoc) {
-                partView = uiController->activeSublimeWindow()->activeView();
+            if (!Core::self()->uiControllerInternal()->browserLikeTabs()) {
+                //find a view if there's one already opened in this area
+                foreach (Sublime::View *view, sdoc->views())
+                {
+                    if (area->views().contains(view) && area->indexOf(view) == area->indexOf(uiController->activeSublimeWindow()->activeView()))
+                    {
+                        partView = view;
+                        break;
+                    }
+                }
+            } else {
+                //don't reopen if file is already open *and* active
+                //if open in the same area we open it a second time, just as a browser would do
+                if (uiController->activeSublimeWindow()->activeView() &&
+                    uiController->activeSublimeWindow()->activeView()->document() == sdoc) {
+                    partView = uiController->activeSublimeWindow()->activeView();
+                }
             }
             
             bool addView = false, applyRange = true;
@@ -493,11 +493,12 @@ struct DocumentControllerPrivate {
                         area->addView(partView, previousView);
                     }
                 }
-                
-                if (previousView && !activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)) {
-                    if (!area->closeView(previousView)) {
-                        area->removeView(partView);
-                        return false;
+                if(Core::self()->uiControllerInternal()->browserLikeTabs()) {
+                    if (previousView && !activationParams.testFlag(IDocumentController::DoNotReplaceCurrentView)) {
+                        if (!area->closeView(previousView)) {
+                            area->removeView(partView);
+                            return false;
+                        }
                     }
                 }
             }

@@ -22,5 +22,8 @@
         <entry name="TabBarArrangeBuddies" key="TabBarArrangeBuddies" type="Int">
             <default>1</default>
         </entry>
+        <entry name="TabBarBrowserLike" key="TabBarBrowserLike" type="Int">
+            <default>0</default>
+        </entry>
   </group>
 </kcfg>
