@@ -349,7 +349,7 @@ struct DocumentControllerPrivate {
         {
             Sublime::View *partView = 0;
 
-            if (!Core::self()->uiControllerInternal()->browserLikeTabs()) {
+            if (!Core::self()->uiControllerInternal()->browserLikeTabs() || activationParams.testFlag(IDocumentController::ReuseExistingView)) {
                 //find a view if there's one already opened in this area
                 foreach (Sublime::View *view, sdoc->views())
                 {
