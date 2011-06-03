@@ -467,7 +467,7 @@ bool Area::closeView(View* view)
     emit aboutToRemoveView(index, view);
     index->remove(view);
     emit viewRemoved(index, view);
-    delete view;
+    view->deleteLater();
 
     return true;
 }

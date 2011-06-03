@@ -517,7 +517,7 @@ bool TextDocument::close(DocumentSaveMode mode)
         return false;
 
     if ( d->document ) {
-        delete d->document; //We have to delete the document right now, to prevent random crashes in the event handler
+        d->document->deleteLater();
     }
 
     return true;
