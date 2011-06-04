@@ -654,6 +654,7 @@ DocumentChangeTracker* BackgroundParser::trackerForUrl(const KDevelop::IndexedSt
 
 void BackgroundParser::documentClosed ( IDocument* document )
 {
+    kDebug() << document->url();
     QMutexLocker l(&d->m_mutex);
     
     if(document->textDocument())

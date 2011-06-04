@@ -230,6 +230,8 @@ struct DocumentControllerPrivate {
         
         //get a part document
         IDocument* doc=0;
+
+        kDebug() << url << "already there?" << documents.contains(url);
         if (documents.contains(url))
             doc=documents.value(url);
         else
@@ -761,6 +763,7 @@ void DocumentController::closeDocument( const KUrl &url )
 
 void DocumentController::notifyDocumentClosed(IDocument* doc)
 {
+    kDebug() << doc->url();
     d->documents.remove(doc->url());
 
     if (d->documents.isEmpty()) {
