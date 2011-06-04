@@ -128,8 +128,14 @@ struct DocumentControllerPrivate {
                                     i18n( "Open File" ) );
         if( !res.URLs.isEmpty() ) {
             QString encoding = res.encoding;
+            bool first = true;
             foreach( const KUrl& u, res.URLs ) {
-                openDocumentInternal(u, QString(), KTextEditor::Range::invalid(), encoding  );
+                IDocumentController::DocumentActivation flags;
+                if (!first) {
+                    flags = IDocumentController::DoNotReplaceCurrentView;
+                }
+                openDocumentInternal(u, QString(), KTextEditor::Range::invalid(), encoding, flags);
+                first = false;
             }
         }
         
