@@ -113,6 +113,9 @@ MainWindow::MainWindow( Sublime::Controller *parent, Qt::WFlags flags )
     }
 
     actionCollection()->action("mark_sticky")->setVisible(controller()->browserLikeTabs());
+    
+    connect(controller(), SIGNAL(aboutToRemoveView(Sublime::View*)), SLOT(viewsChanged()));
+    connect(controller(), SIGNAL(viewAdded(Sublime::View*)), SLOT(viewsChanged()));
 
 //    connect(this->guiFactory(), SIGNAL(clientAdded(KXMLGUIClient*)),
 //            d, SLOT(fixToolbar()));
@@ -283,6 +286,14 @@ void MainWindow::shortcutsChanged()
     }
 }
 
+void MainWindow::viewsChanged()
+{
+    if (area() && area()->views().count()) {
+        stateChanged("view_active");
+    } else {
+        stateChanged("no_view_active");
+    }
+}
 
 void MainWindow::initialize()
 {

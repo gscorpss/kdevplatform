@@ -215,7 +215,9 @@ void MainWindowPrivate::reloadAll()
 void MainWindowPrivate::viewMarkSticky()
 {
     Sublime::View* view = m_mainWindow->activeView();
-    view->setSticky(!view->isSticky());
+    if (view) {
+        view->setSticky(!view->isSticky());
+    }
 }
 
 }

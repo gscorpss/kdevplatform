@@ -83,6 +83,7 @@ protected:
 public Q_SLOTS:
     virtual void loadSettings();
     virtual void saveSettings();
+
 protected:
     virtual void initialize();
     virtual void cleanup();
@@ -100,6 +101,7 @@ protected Q_SLOTS:
 private Q_SLOTS:
     void updateCaption();
     void shortcutsChanged();
+    void viewsChanged();
 
 private:
     class MainWindowPrivate *d;
