@@ -335,7 +335,7 @@ void MainWindowPrivate::setupActions()
     action->setToolTip( i18n( "Add Tool View" ) );
     action->setWhatsThis( i18n( "<b>Add Tool View</b><p>Adds a new tool view to this window.</p>" ) );
 
-    action = actionCollection()->addAction( "view_sticky" );
+    action = actionCollection()->addAction( "mark_sticky" );
     action->setIcon(KIcon("document-edit"));
     action->setShortcut( Qt::CTRL + Qt::Key_M );
     action->setText( i18n( "Mark Sticky" ) );

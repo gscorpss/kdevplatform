@@ -175,7 +175,7 @@ For example, a header file will be opened next to the implementation file.</stri
          <string>When enabled, tabs behave like they do in a browser, by default no new tab is opened.</string>
         </property>
         <property name="text">
-         <string>Browser like Tabs</string>
+         <string>Browser like Tabs (requires restart)</string>
         </property>
        </widget>
       </item>

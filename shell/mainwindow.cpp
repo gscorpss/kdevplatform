@@ -112,6 +112,8 @@ MainWindow::MainWindow( Sublime::Controller *parent, Qt::WFlags flags )
         setXMLFile( ShellExtension::getInstance() ->xmlFile() );
     }
 
+    actionCollection()->action("mark_sticky")->setVisible(controller()->browserLikeTabs());
+
 //    connect(this->guiFactory(), SIGNAL(clientAdded(KXMLGUIClient*)),
 //            d, SLOT(fixToolbar()));
 }
