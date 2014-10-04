@@ -233,6 +233,11 @@ void MainWindowPrivate::setupActions()
     action->setIcon( KIcon("preferences-other") );
     action->setText( i18n("Configure Editor..."));
     action->setWhatsThis( i18nc("@info:whatsthis", "Configure various aspects of this editor.") );
+#ifdef Q_OS_MAC
+    // prevent this configure menuitem to be stuck in the Application menu as the Preferences item. The KAction constructor
+    // cannot do it because this action instance is allocated as a QAction.
+    action->setMenuRole(QAction::NoRole);
+#endif
 
     action =  KStandardAction::configureNotifications(this, SLOT(configureNotifications()), actionCollection());
     action->setText( i18n("Configure Notifications...") );
@@ -243,6 +248,10 @@ void MainWindowPrivate::setupActions()
     action->setText( i18n("About KDevelop Platform") );
     action->setStatusTip( i18n("Show Information about KDevelop Platform") );
     action->setWhatsThis( i18nc( "@info:whatsthis", "Shows a dialog with information about KDevelop Platform." ) );
+#ifdef Q_OS_MAC
+    // prevent this configure menuitem to be stuck in the Application menu as the About item.
+    action->setMenuRole(QAction::NoRole);
+#endif
 
     action = actionCollection()->addAction( "loaded_plugins", this, SLOT(showLoadedPlugins()) );
     action->setText( i18n("Loaded Plugins") );

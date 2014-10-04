@@ -134,6 +134,10 @@ ProjectManagerViewPlugin::ProjectManagerViewPlugin( QObject *parent, const QVari
     d->m_configure->setIconText( i18n("Configure") );
     d->m_configure->setIcon(KIcon("run-build-configure"));
     d->m_configure->setEnabled( false );
+#ifdef Q_OS_MAC
+    // prevent this configure menuitem to be stuck in the Application menu as the About item.
+    action->setMenuRole(QAction::NoRole);
+#endif
     connect( d->m_configure, SIGNAL(triggered()), this, SLOT(configureProjectItems()) );
     actionCollection()->addAction( "project_configure", d->m_configure );
     d->m_prune = new KAction( i18n("Prune Selection"), this );
