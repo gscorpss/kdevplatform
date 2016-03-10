@@ -18,6 +18,8 @@
 
 #include "problemnavigationcontext.h"
 
+#include "util/debug.h"
+
 #include <QHBoxLayout>
 #include <QMenu>
 
@@ -27,37 +29,75 @@
 #include <language/duchain/duchainlock.h>
 #include <language/duchain/duchainutils.h>
 #include <language/duchain/problem.h>
-#include <interfaces/iassistant.h>
 #include <util/richtextpushbutton.h>
 
 using namespace KDevelop;
+
+namespace {
+
+QString KEY_START_ASSISTANT() { return QStringLiteral("start_assistant"); }
+QString KEY_INVOKE_ACTION(int num) { return QStringLiteral("invoke_action_%1").arg(num); }
+
+}
+
+
+KDevelop::AssistantNavigationContext::AssistantNavigationContext(const IAssistant::Ptr& assistant)
+  : m_assistant(assistant)
+{
+}
+
+KDevelop::AssistantNavigationContext::~AssistantNavigationContext()
+{
+}
+
+
+QString KDevelop::AssistantNavigationContext::name() const
+{
+  return i18n("Assistant");
+}
+
+QString KDevelop::AssistantNavigationContext::html(bool shorten)
+{
+  clear();
+  m_shorten = shorten;
+
+  modifyHtml() += i18n("Solutions:") + "<br/>";
+
+  int index = 0;
+  foreach (auto assistantAction, m_assistant->actions()) {
+    makeLink(i18n("Apply solution %1", index), KEY_INVOKE_ACTION(index),
+             NavigationAction(KEY_INVOKE_ACTION(index)));
+    modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "<br/>";
+    ++index;
+  }
+
+  return currentHtml();
+}
+
+NavigationContextPointer AssistantNavigationContext::executeKeyAction(QString key)
+{
+  if (key.startsWith(QLatin1String("invoke_action_"))) {
+    if (!m_assistant)
+      return {};
+
+    const auto index = key.replace(QLatin1String("invoke_action_"), QString()).toInt();
+    auto action = m_assistant->actions().value(index);
+    if (action) {
+      action->execute();
+    } else {
+      qCWarning(LANGUAGE()) << "Action got removed in-between";
+      return {};
+    }
+  }
+
+  return {};
+}
+
 
 ProblemNavigationContext::ProblemNavigationContext(const IProblem::Ptr& problem)
   : m_problem(problem)
   , m_widget(nullptr)
 {
-  QExplicitlySharedDataPointer< IAssistant > solution = problem->solutionAssistant();
-  if(solution && !solution->actions().isEmpty()) {
-    m_widget = new QWidget;
-    QHBoxLayout* layout = new QHBoxLayout(m_widget);
-    RichTextPushButton* button = new RichTextPushButton;
-//     button->setPopupMode(QToolButton::InstantPopup);
-    if(!solution->title().isEmpty())
-      button->setHtml(i18n("Solve: %1", solution->title()));
-    else
-      button->setHtml(i18n("Solve"));
-
-    QMenu* menu = new QMenu;
-    menu->setFocusPolicy(Qt::NoFocus);
-    foreach(IAssistantAction::Ptr action, solution->actions()) {
-      menu->addAction(action->toKAction(this));
-    }
-    button->setMenu(menu);
-
-    layout->addWidget(button);
-    layout->setAlignment(button, Qt::AlignLeft);
-    m_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-  }
 }
 
 ProblemNavigationContext::~ProblemNavigationContext()
@@ -80,14 +120,20 @@ QString ProblemNavigationContext::name() const
   return i18n("Problem");
 }
 
-
 QString ProblemNavigationContext::html(bool shorten)
 {
   clear();
   m_shorten = shorten;
   modifyHtml() += QStringLiteral("<html><body><p>");
 
-  modifyHtml() += i18n("Problem in <b>%1</b>:<br/>", m_problem->sourceString());
+  modifyHtml() += i18n("Problem in %1: ", m_problem->sourceString());
+  auto assistant = m_problem->solutionAssistant();
+  if (assistant && !assistant->actions().isEmpty()) {
+    makeLink(i18n("Start Assistant (%1 solutions)", assistant->actions().count()), KEY_START_ASSISTANT(),
+             NavigationAction(KEY_START_ASSISTANT()));
+    modifyHtml() += QStringLiteral("<br/>");
+  }
+
   modifyHtml() += m_problem->description().toHtmlEscaped();
   modifyHtml() += QStringLiteral("<br/>");
   modifyHtml() += "<i style=\"white-space:pre-wrap\">" + m_problem->explanation().toHtmlEscaped() + "</i>";
@@ -125,4 +171,17 @@ QString ProblemNavigationContext::html(bool shorten)
 
   modifyHtml() += QStringLiteral("</p></body></html>");
   return currentHtml();
+}
+
+NavigationContextPointer ProblemNavigationContext::executeKeyAction(QString key)
+{
+  if (key == KEY_START_ASSISTANT()) {
+    auto assistant = m_problem->solutionAssistant();
+    if (!assistant)
+      return {};
+
+    return NavigationContextPointer(new AssistantNavigationContext(assistant));
+  }
+
+  return {};
 }

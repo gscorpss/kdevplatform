@@ -20,11 +20,29 @@
 #define KDEVPLATFORM_PROBLEMNAVIGATIONCONTEXT_H
 
 #include <interfaces/iproblem.h>
+#include <interfaces/iassistant.h>
+
 #include <language/duchain/navigation/abstractnavigationcontext.h>
 #include <language/languageexport.h>
 #include <qpointer.h>
 
 namespace KDevelop {
+
+class KDEVPLATFORMLANGUAGE_EXPORT AssistantNavigationContext : public AbstractNavigationContext
+{
+  Q_OBJECT
+  public:
+    explicit AssistantNavigationContext(const IAssistant::Ptr& assistant);
+    ~AssistantNavigationContext();
+
+    virtual QString name() const override;
+    virtual QString html(bool shorten = false) override;
+
+    NavigationContextPointer executeKeyAction(QString key) override;
+
+  private:
+    IAssistant::Ptr m_assistant;
+};
 
 class KDEVPLATFORMLANGUAGE_EXPORT ProblemNavigationContext : public AbstractNavigationContext
 {
@@ -37,6 +55,8 @@ class KDEVPLATFORMLANGUAGE_EXPORT ProblemNavigationContext : public AbstractNavi
     QString html(bool shorten = false) override;
     QWidget* widget() const override;
     bool isWidgetMaximized() const override;
+
+    NavigationContextPointer executeKeyAction(QString key) override;
 
   private:
     IProblem::Ptr m_problem;
