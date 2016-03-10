@@ -63,10 +63,12 @@
 #include <language/duchain/functiondefinition.h>
 #include <language/duchain/parsingenvironment.h>
 #include <language/duchain/uses.h>
+#include <language/duchain/problem.h>
 #include <language/duchain/specializationstore.h>
 #include <language/duchain/aliasdeclaration.h>
 #include <language/duchain/types/functiontype.h>
 #include <language/duchain/navigation/abstractnavigationwidget.h>
+#include <language/duchain/navigation/problemnavigationcontext.h>
 
 #include <language/util/navigationtooltip.h>
 
@@ -413,42 +415,57 @@ void ContextBrowserPlugin::hideToolTip() {
   }
 }
 
+QWidget* ContextBrowserPlugin::navigationWidgetForPosition(KTextEditor::View* view, KTextEditor::Cursor position)
+{
+  QUrl viewUrl = view->document()->url();
+  auto languages = ICore::self()->languageController()->languagesForUrl(viewUrl);
+
+  DUChainReadLocker lock(DUChain::lock());
+  foreach (const auto language, languages) {
+    auto widget = language->specialLanguageObjectNavigationWidget(viewUrl, KTextEditor::Cursor(position));
+    auto navigationWidget = qobject_cast<AbstractNavigationWidget*>(widget);
+    if(navigationWidget)
+      return navigationWidget;
+  }
+
+  TopDUContext* topContext = DUChainUtils::standardContextForUrl(view->document()->url());
+  if (topContext) {
+    const auto problems = topContext->problems();
+    foreach (auto problem, problems) {
+      if (problem->rangeInCurrentRevision().contains(position)) {
+        auto widget = new AbstractNavigationWidget;
+        widget->setContext(NavigationContextPointer(new ProblemNavigationContext(problem)));
+        return widget;
+      }
+    }
+  }
+
+  auto declUnderCursor = DUChainUtils::itemUnderCursor(viewUrl, position);
+  Declaration* decl = DUChainUtils::declarationForDefinition(declUnderCursor);
+  if (decl && decl->kind() == Declaration::Alias) {
+    AliasDeclaration* alias = dynamic_cast<AliasDeclaration*>(decl);
+    Q_ASSERT(alias);
+    DUChainReadLocker lock;
+    decl = alias->aliasedDeclaration().declaration();
+  }
+  if(decl) {
+    if(m_currentToolTipDeclaration == IndexedDeclaration(decl) && m_currentToolTip)
+      return nullptr;
+
+    m_currentToolTipDeclaration = IndexedDeclaration(decl);
+    return decl->context()->createNavigationWidget(decl, DUChainUtils::standardContextForUrl(viewUrl));
+  }
+
+  return nullptr;
+}
+
 void ContextBrowserPlugin::showToolTip(KTextEditor::View* view, KTextEditor::Cursor position) {
 
   ContextBrowserView* contextView = browserViewForWidget(view);
   if(contextView && contextView->isVisible() && !contextView->isLocked())
     return; // If the context-browser view is visible, it will care about updating by itself
 
-  QUrl viewUrl = view->document()->url();
-  auto languages = ICore::self()->languageController()->languagesForUrl(viewUrl);
-
-  QWidget* navigationWidget = 0;
-  {
-    DUChainReadLocker lock(DUChain::lock());
-    foreach (const auto language, languages) {
-      auto widget = language->specialLanguageObjectNavigationWidget(viewUrl, KTextEditor::Cursor(position));
-      navigationWidget = qobject_cast<AbstractNavigationWidget*>(widget);
-      if(navigationWidget)
-        break;
-    }
-
-    if(!navigationWidget) {
-      Declaration* decl = DUChainUtils::declarationForDefinition( DUChainUtils::itemUnderCursor(viewUrl, KTextEditor::Cursor(position)) );
-      if (decl && decl->kind() == Declaration::Alias) {
-        AliasDeclaration* alias = dynamic_cast<AliasDeclaration*>(decl);
-        Q_ASSERT(alias);
-        DUChainReadLocker lock;
-        decl = alias->aliasedDeclaration().declaration();
-      }
-      if(decl) {
-        if(m_currentToolTipDeclaration == IndexedDeclaration(decl) && m_currentToolTip)
-          return;
-        m_currentToolTipDeclaration = IndexedDeclaration(decl);
-        navigationWidget = decl->context()->createNavigationWidget(decl, DUChainUtils::standardContextForUrl(viewUrl));
-      }
-    }
-  }
-
+  auto navigationWidget = navigationWidgetForPosition(view, position);
   if(navigationWidget) {
 
     // If we have an invisible context-view, assign the tooltip navigation-widget to it.
@@ -466,7 +483,8 @@ void ContextBrowserPlugin::showToolTip(KTextEditor::View* view, KTextEditor::Cur
     KTextEditor::Range itemRange;
     {
       DUChainReadLocker lock;
-      itemRange = DUChainUtils::itemRangeUnderCursor(viewUrl, KTextEditor::Cursor(position));
+      auto viewUrl = view->document()->url();
+      itemRange = DUChainUtils::itemRangeUnderCursor(viewUrl, position);
     }
     tooltip->setHandleRect(getItemBoundingRect(view, itemRange));
     tooltip->resize( navigationWidget->sizeHint() + QSize(10, 10) );
