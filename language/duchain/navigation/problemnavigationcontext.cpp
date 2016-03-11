@@ -23,6 +23,7 @@
 
 #include <QHBoxLayout>
 #include <QMenu>
+#include <QDebug>
 
 #include <KIconLoader>
 #include <KLocalizedString>
@@ -108,7 +109,6 @@ NavigationContextPointer AssistantNavigationContext::executeKeyAction(QString ke
 
   return {};
 }
-
 
 ProblemNavigationContext::ProblemNavigationContext(const IProblem::Ptr& problem)
   : m_problem(problem)
@@ -239,4 +239,20 @@ NavigationContextPointer ProblemNavigationContext::executeKeyAction(QString key)
   }
 
   return {};
+}
+
+void ProblemNavigationContext::executeAction(int index)
+{
+  auto assistant = m_problem->solutionAssistant();
+  if (!assistant)
+    return;
+
+
+  auto action = assistant->actions().value(index);
+  if (action) {
+    action->execute();
+  } else {
+    qCWarning(LANGUAGE()) << "No such action";
+    return;
+  }
 }

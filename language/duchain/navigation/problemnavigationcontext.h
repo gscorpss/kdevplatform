@@ -59,6 +59,9 @@ class KDEVPLATFORMLANGUAGE_EXPORT ProblemNavigationContext : public AbstractNavi
 
     NavigationContextPointer executeKeyAction(QString key) override;
 
+public slots:
+    void executeAction(int index); // TODO: Add API in base class?
+
   private:
     IProblem::Ptr m_problem;
 

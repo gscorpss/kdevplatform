@@ -90,6 +90,8 @@ class BrowseManager : public QObject {
         //Emitted when browsing was started using the magic-modifier
         void startDelayedBrowsing(KTextEditor::View* view);
         void stopDelayedBrowsing();
+        void invokeAction(int index);
+
     private slots:
         void eventuallyStartDelayedBrowsing();
     private:

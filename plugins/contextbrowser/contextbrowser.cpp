@@ -197,6 +197,8 @@ KXMLGUIClient* ContextBrowserPlugin::createGUIForMainWindow( Sublime::MainWindow
             this, &ContextBrowserPlugin::startDelayedBrowsing);
     connect(m_browseManager, &BrowseManager::stopDelayedBrowsing,
             this, &ContextBrowserPlugin::stopDelayedBrowsing);
+    connect(m_browseManager, &BrowseManager::invokeAction,
+            this, &ContextBrowserPlugin::invokeAction);
 
     m_toolbarWidget = toolbarWidgetForMainWindow(window);
     m_toolbarWidgetLayout = new QHBoxLayout;
@@ -399,6 +401,20 @@ QString ContextBrowserHintProvider::textHint(View* view, const KTextEditor::Curs
 
 void ContextBrowserPlugin::stopDelayedBrowsing() {
   hideToolTip();
+}
+
+void ContextBrowserPlugin::invokeAction(int index)
+{
+  if (!m_currentNavigationWidget)
+    return;
+
+
+  auto navigationWidget = qobject_cast<AbstractNavigationWidget*>(m_currentNavigationWidget);
+  if (!navigationWidget)
+    return;
+
+  // TODO: Add API in AbstractNavigation{Widget,Context}?
+  QMetaObject::invokeMethod(navigationWidget->context().data(), "executeAction", Q_ARG(int, index));
 }
 
 void ContextBrowserPlugin::startDelayedBrowsing(KTextEditor::View* view) {

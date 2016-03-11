@@ -125,6 +125,7 @@ class ContextBrowserPlugin : public KDevelop::IPlugin, public KDevelop::IContext
     
     void startDelayedBrowsing(KTextEditor::View* view);
     void stopDelayedBrowsing();
+    void invokeAction(int index);
     
     void previousUseShortcut();
     void nextUseShortcut();

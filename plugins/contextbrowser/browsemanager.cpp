@@ -192,6 +192,15 @@ bool BrowseManager::eventFilter(QObject * watched, QEvent * event) {
         }
     }
 
+    if (keyEvent && m_browsingByKey && m_browsingStartedInView && keyEvent->type() == QEvent::KeyPress) {
+        if (keyEvent->key() >= Qt::Key_1 && keyEvent->key() <= Qt::Key_9) {
+            // user wants to trigger an action in the code browser
+            const int index = keyEvent->key() - Qt::Key_1;
+            emit invokeAction(index);
+            return true;
+        }
+    }
+
     if(!view) {
         return false;
     }
