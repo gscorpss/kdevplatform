@@ -174,6 +174,11 @@ QString ProblemNavigationContext::html(bool shorten)
   modifyHtml() += QStringLiteral("<br/>");
   modifyHtml() += "<i style=\"white-space:pre-wrap\">" + m_problem->explanation().toHtmlEscaped() + "</i>";
 
+  modifyHtml() += QStringLiteral("</td>");
+  // END: right column
+
+  modifyHtml() += QStringLiteral("</tr></table>");
+
   const QVector<IProblem::Ptr> diagnostics = m_problem->diagnostics();
   if (!diagnostics.isEmpty()) {
     modifyHtml() += QStringLiteral("<br/>");
@@ -204,11 +209,6 @@ QString ProblemNavigationContext::html(bool shorten)
       modifyHtml() += QStringLiteral("<br/>");
     }
   }
-
-  modifyHtml() += QStringLiteral("</td>");
-  // END: right column
-
-  modifyHtml() += QStringLiteral("</tr></table>");
 
   auto assistant = m_problem->solutionAssistant();
   if (assistant && !assistant->actions().isEmpty()) {
