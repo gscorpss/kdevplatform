@@ -17,12 +17,14 @@
 */
 
 #include "problemnavigationcontext.h"
+#include <QListView>
 
 #include "util/debug.h"
 
 #include <QHBoxLayout>
 #include <QMenu>
 
+#include <KIconLoader>
 #include <KLocalizedString>
 
 #include <language/duchain/declaration.h>
@@ -37,6 +39,20 @@ namespace {
 
 QString KEY_START_ASSISTANT() { return QStringLiteral("start_assistant"); }
 QString KEY_INVOKE_ACTION(int num) { return QStringLiteral("invoke_action_%1").arg(num); }
+
+QString iconForSeverity(IProblem::Severity severity)
+{
+  KIconLoader loader;
+  switch (severity) {
+  case IProblem::Hint:
+    return loader.iconPath(QStringLiteral("dialog-information"), KIconLoader::Small);
+  case IProblem::Warning:
+    return loader.iconPath(QStringLiteral("dialog-warning"), KIconLoader::Small);
+  case IProblem::Error:
+    return loader.iconPath(QStringLiteral("dialog-error"), KIconLoader::Small);
+  }
+  return {};
+}
 
 }
 
@@ -65,7 +81,7 @@ QString KDevelop::AssistantNavigationContext::html(bool shorten)
 
   int index = 0;
   foreach (auto assistantAction, m_assistant->actions()) {
-    makeLink(i18n("Apply solution %1", index), KEY_INVOKE_ACTION(index),
+    makeLink(i18n("Apply %1", index + 1), KEY_INVOKE_ACTION(index),
              NavigationAction(KEY_INVOKE_ACTION(index)));
     modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "<br/>";
     ++index;
@@ -124,15 +140,25 @@ QString ProblemNavigationContext::html(bool shorten)
 {
   clear();
   m_shorten = shorten;
-  modifyHtml() += QStringLiteral("<html><body><p>");
+  auto iconPath = iconForSeverity(m_problem->severity());
 
-  modifyHtml() += i18n("Problem in %1: ", m_problem->sourceString());
+  modifyHtml() += QStringLiteral("<html><body>");
+
+  modifyHtml() += QStringLiteral("<table><tr>");
+
+  modifyHtml() += QStringLiteral("<td><img width='32' height='32' src='%1'/></td>").arg(iconPath);
+
+  // BEGIN: right column
+  modifyHtml() += QStringLiteral("<td>").arg(iconPath);
+
+  modifyHtml() += i18n("Problem in <i>%1</i> ", m_problem->sourceString());
   auto assistant = m_problem->solutionAssistant();
   if (assistant && !assistant->actions().isEmpty()) {
-    makeLink(i18n("Start Assistant (%1 solutions)", assistant->actions().count()), KEY_START_ASSISTANT(),
+    makeLink(i18np("Start Assistant (%1 solution)", "Start Assistant (%1 solutions)",
+             assistant->actions().count()), KEY_START_ASSISTANT(),
              NavigationAction(KEY_START_ASSISTANT()));
-    modifyHtml() += QStringLiteral("<br/>");
   }
+  modifyHtml() += QStringLiteral("<br/>");
 
   modifyHtml() += m_problem->description().toHtmlEscaped();
   modifyHtml() += QStringLiteral("<br/>");
@@ -169,7 +195,10 @@ QString ProblemNavigationContext::html(bool shorten)
     }
   }
 
-  modifyHtml() += QStringLiteral("</p></body></html>");
+  modifyHtml() += QStringLiteral("</td>");
+  // END: right column
+
+  modifyHtml() += QStringLiteral("</tr></table></body></html>");
   return currentHtml();
 }
 
