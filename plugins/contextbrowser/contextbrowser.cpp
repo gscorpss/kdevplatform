@@ -443,7 +443,7 @@ static ProblemPointer findProblemUnderCursor(const TopDUContext* topContext, KTe
   return {};
 }
 
-static ProblemPointer findProblemCloseToCursor(const TopDUContext* topContext, KTextEditor::Cursor position)
+static ProblemPointer findProblemCloseToCursor(const TopDUContext* topContext, KTextEditor::Cursor position, KTextEditor::View* view)
 {
   auto problems = topContext->problems();
   if (problems.isEmpty())
@@ -469,6 +469,16 @@ static ProblemPointer findProblemCloseToCursor(const TopDUContext* topContext, K
     return qAbs(aRange.end().column() - position.column()) <
       qAbs(bRange.end().column() - position.column());
   });
+
+  auto r = (*closestProblem)->rangeInCurrentRevision();
+  if ( ! r.contains(position) ) {
+    auto dist = position < r.start() ? KTextEditor::Range(position, r.start()) : KTextEditor::Range(r.end(), position);
+    auto textBetween = view->document()->text(dist);
+    auto isSpace = std::all_of(textBetween.begin(), textBetween.end(), [](QChar c) { return c.isSpace(); });
+    if ( ! isSpace ) {
+      return {};
+    }
+  }
 
   return *closestProblem;
 }
@@ -520,7 +530,7 @@ QWidget* ContextBrowserPlugin::navigationWidgetForPosition(KTextEditor::View* vi
 
   if (topContext) {
     // second pass: find closest problem to the cursor
-    const auto problem = findProblemCloseToCursor(topContext, position);
+    const auto problem = findProblemCloseToCursor(topContext, position, view);
     if (problem) {
       if (problem == m_currentToolTipProblem && m_currentToolTip) {
         return nullptr;
