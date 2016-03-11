@@ -159,26 +159,6 @@ QString ProblemNavigationContext::html(bool shorten)
   modifyHtml() += QStringLiteral("<br/>");
   modifyHtml() += "<i style=\"white-space:pre-wrap\">" + m_problem->explanation().toHtmlEscaped() + "</i>";
 
-  auto assistant = m_problem->solutionAssistant();
-  if (assistant && !assistant->actions().isEmpty()) {
-    if (inlineSolutions) {
-      modifyHtml() += "<br/>";
-
-      int index = 0;
-      foreach (auto assistantAction, assistant->actions()) {
-        makeLink(i18n("Solution (%1)", index + 1), KEY_INVOKE_ACTION(index),
-                 NavigationAction(KEY_INVOKE_ACTION(index)));
-        modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "<br/>";
-        ++index;
-      }
-    } else {
-      makeLink(i18np("Start Assistant (%1 solution)", "Start Assistant (%1 solutions)",
-               assistant->actions().count()), KEY_START_ASSISTANT(),
-               NavigationAction(KEY_START_ASSISTANT()));
-    }
-    modifyHtml() += QStringLiteral("<br/>");
-  }
-
   const QVector<IProblem::Ptr> diagnostics = m_problem->diagnostics();
   if (!diagnostics.isEmpty()) {
     modifyHtml() += QStringLiteral("<br/>");
@@ -214,6 +194,26 @@ QString ProblemNavigationContext::html(bool shorten)
   // END: right column
 
   modifyHtml() += QStringLiteral("</tr></table>");
+
+  auto assistant = m_problem->solutionAssistant();
+  if (assistant && !assistant->actions().isEmpty()) {
+    if (inlineSolutions) {
+      modifyHtml() += "<br/>";
+
+      int index = 0;
+      foreach (auto assistantAction, assistant->actions()) {
+        makeLink(i18n("Solution (%1)", index + 1), KEY_INVOKE_ACTION(index),
+                 NavigationAction(KEY_INVOKE_ACTION(index)));
+        modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "<br/>";
+        ++index;
+      }
+    } else {
+      makeLink(i18np("Start Assistant (%1 solution)", "Start Assistant (%1 solutions)",
+               assistant->actions().count()), KEY_START_ASSISTANT(),
+               NavigationAction(KEY_START_ASSISTANT()));
+    }
+    modifyHtml() += QStringLiteral("<br/>");
+  }
 
   return currentHtml();
 }
