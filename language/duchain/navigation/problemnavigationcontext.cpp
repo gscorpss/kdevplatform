@@ -110,8 +110,9 @@ NavigationContextPointer AssistantNavigationContext::executeKeyAction(QString ke
   return {};
 }
 
-ProblemNavigationContext::ProblemNavigationContext(const IProblem::Ptr& problem)
+ProblemNavigationContext::ProblemNavigationContext(const IProblem::Ptr& problem, const Flags flags)
   : m_problem(problem)
+  , m_flags(flags)
   , m_widget(nullptr)
 {
 }
@@ -152,8 +153,22 @@ QString ProblemNavigationContext::html(bool shorten)
   // BEGIN: right column
   modifyHtml() += QStringLiteral("<td>").arg(iconPath);
 
-  modifyHtml() += i18n("Problem in <i>%1</i> ", m_problem->sourceString());
+  modifyHtml() += i18n("Problem in <i>%1</i>", m_problem->sourceString());
   modifyHtml() += QStringLiteral("<br/>");
+
+  if (m_flags & ShowLocation) {
+    const auto duchainProblem = dynamic_cast<Problem*>(m_problem.data());
+    if (duchainProblem) {
+      modifyHtml() += labelHighlight(i18n("Location: "));
+      makeLink(QStringLiteral("%1 :%2")
+          .arg(duchainProblem->finalLocation().document.toUrl().fileName())
+          .arg(duchainProblem->rangeInCurrentRevision().start().line() + 1),
+        QString(),
+        NavigationAction(duchainProblem->finalLocation().document.toUrl(), duchainProblem->finalLocation().start())
+      );
+      modifyHtml() += QStringLiteral("<br/>");
+    }
+  }
 
   modifyHtml() += m_problem->description().toHtmlEscaped();
   modifyHtml() += QStringLiteral("<br/>");

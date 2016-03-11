@@ -49,7 +49,13 @@ class KDEVPLATFORMLANGUAGE_EXPORT ProblemNavigationContext : public AbstractNavi
 {
   Q_OBJECT
   public:
-    explicit ProblemNavigationContext(const IProblem::Ptr& problem);
+    enum Flag {
+      NoFlag = 0,
+      ShowLocation = 1 << 0,
+    };
+    Q_DECLARE_FLAGS(Flags, Flag)
+
+    explicit ProblemNavigationContext(const IProblem::Ptr& problem, const Flags flags = {});
     ~ProblemNavigationContext() override;
 
     QString name() const override;
@@ -64,6 +70,7 @@ public slots:
 
   private:
     IProblem::Ptr m_problem;
+    Flags m_flags;
 
     QPointer<QWidget> m_widget;
 };
