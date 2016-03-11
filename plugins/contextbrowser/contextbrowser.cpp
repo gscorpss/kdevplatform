@@ -63,7 +63,6 @@
 #include <language/duchain/functiondefinition.h>
 #include <language/duchain/parsingenvironment.h>
 #include <language/duchain/uses.h>
-#include <language/duchain/problem.h>
 #include <language/duchain/specializationstore.h>
 #include <language/duchain/aliasdeclaration.h>
 #include <language/duchain/types/functiontype.h>
@@ -428,6 +427,8 @@ void ContextBrowserPlugin::hideToolTip() {
     m_currentToolTip->deleteLater();
     m_currentToolTip = 0;
     m_currentNavigationWidget = 0;
+    m_currentToolTipProblem = {};
+    m_currentToolTipDeclaration = {};
   }
 }
 
@@ -449,6 +450,10 @@ QWidget* ContextBrowserPlugin::navigationWidgetForPosition(KTextEditor::View* vi
     const auto problems = topContext->problems();
     foreach (auto problem, problems) {
       if (problem->rangeInCurrentRevision().contains(position)) {
+        if (problem == m_currentToolTipProblem && m_currentToolTip) {
+          return nullptr;
+        }
+        m_currentToolTipProblem = problem;
         auto widget = new AbstractNavigationWidget;
         widget->setContext(NavigationContextPointer(new ProblemNavigationContext(problem)));
         return widget;

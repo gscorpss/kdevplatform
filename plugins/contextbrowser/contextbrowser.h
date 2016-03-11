@@ -35,6 +35,7 @@
 #include <language/duchain/duchainpointer.h>
 #include <language/duchain/declaration.h>
 #include <language/duchain/indexedducontext.h>
+#include <language/duchain/problem.h>
 #include <language/editor/persistentmovingrange.h>
 #include <language/interfaces/iquickopen.h>
 #include <language/editor/documentcursor.h>
@@ -226,6 +227,7 @@ class ContextBrowserPlugin : public KDevelop::IPlugin, public KDevelop::IContext
     QPointer<QWidget> m_currentToolTip;
     QPointer<QWidget> m_currentNavigationWidget;
     KDevelop::IndexedDeclaration m_currentToolTipDeclaration;
+    KDevelop::Problem::Ptr m_currentToolTipProblem;
     QAction* m_findUses;
     
     QPointer<KTextEditor::Document> m_lastInsertionDocument;
