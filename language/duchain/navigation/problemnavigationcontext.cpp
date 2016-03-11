@@ -138,6 +138,9 @@ QString ProblemNavigationContext::name() const
 
 QString ProblemNavigationContext::html(bool shorten)
 {
+  // TODO: Remove me
+  static const bool inlineSolutions = true;
+
   clear();
   m_shorten = shorten;
   auto iconPath = iconForSeverity(m_problem->severity());
@@ -152,17 +155,31 @@ QString ProblemNavigationContext::html(bool shorten)
   modifyHtml() += QStringLiteral("<td>").arg(iconPath);
 
   modifyHtml() += i18n("Problem in <i>%1</i> ", m_problem->sourceString());
-  auto assistant = m_problem->solutionAssistant();
-  if (assistant && !assistant->actions().isEmpty()) {
-    makeLink(i18np("Start Assistant (%1 solution)", "Start Assistant (%1 solutions)",
-             assistant->actions().count()), KEY_START_ASSISTANT(),
-             NavigationAction(KEY_START_ASSISTANT()));
-  }
   modifyHtml() += QStringLiteral("<br/>");
 
   modifyHtml() += m_problem->description().toHtmlEscaped();
   modifyHtml() += QStringLiteral("<br/>");
   modifyHtml() += "<i style=\"white-space:pre-wrap\">" + m_problem->explanation().toHtmlEscaped() + "</i>";
+
+  auto assistant = m_problem->solutionAssistant();
+  if (assistant && !assistant->actions().isEmpty()) {
+    if (inlineSolutions) {
+      modifyHtml() += "<br/>";
+
+      int index = 0;
+      foreach (auto assistantAction, assistant->actions()) {
+        makeLink(i18n("Solution (%1)", index + 1), KEY_INVOKE_ACTION(index),
+                 NavigationAction(KEY_INVOKE_ACTION(index)));
+        modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "<br/>";
+        ++index;
+      }
+    } else {
+      makeLink(i18np("Start Assistant (%1 solution)", "Start Assistant (%1 solutions)",
+               assistant->actions().count()), KEY_START_ASSISTANT(),
+               NavigationAction(KEY_START_ASSISTANT()));
+    }
+    modifyHtml() += QStringLiteral("<br/>");
+  }
 
   const QVector<IProblem::Ptr> diagnostics = m_problem->diagnostics();
   if (!diagnostics.isEmpty()) {
@@ -204,12 +221,21 @@ QString ProblemNavigationContext::html(bool shorten)
 
 NavigationContextPointer ProblemNavigationContext::executeKeyAction(QString key)
 {
+  auto assistant = m_problem->solutionAssistant();
+  if (!assistant)
+    return {};
   if (key == KEY_START_ASSISTANT()) {
-    auto assistant = m_problem->solutionAssistant();
-    if (!assistant)
-      return {};
-
     return NavigationContextPointer(new AssistantNavigationContext(assistant));
+  }
+  if (key.startsWith(QLatin1String("invoke_action_"))) {
+    const auto index = key.replace(QLatin1String("invoke_action_"), QString()).toInt();
+    auto action = assistant->actions().value(index);
+    if (action) {
+      action->execute();
+    } else {
+      qCWarning(LANGUAGE()) << "Action got removed in-between";
+      return {};
+    }
   }
 
   return {};

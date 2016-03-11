@@ -28,6 +28,7 @@
 
 namespace KDevelop {
 
+/// TODO: Kill me?
 class KDEVPLATFORMLANGUAGE_EXPORT AssistantNavigationContext : public AbstractNavigationContext
 {
   Q_OBJECT
