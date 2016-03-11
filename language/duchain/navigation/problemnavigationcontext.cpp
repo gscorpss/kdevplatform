@@ -145,8 +145,6 @@ QString ProblemNavigationContext::html(bool shorten)
   m_shorten = shorten;
   auto iconPath = iconForSeverity(m_problem->severity());
 
-  modifyHtml() += QStringLiteral("<html><body>");
-
   modifyHtml() += QStringLiteral("<table><tr>");
 
   modifyHtml() += QStringLiteral("<td><img width='32' height='32' src='%1'/></td>").arg(iconPath);
@@ -215,7 +213,8 @@ QString ProblemNavigationContext::html(bool shorten)
   modifyHtml() += QStringLiteral("</td>");
   // END: right column
 
-  modifyHtml() += QStringLiteral("</tr></table></body></html>");
+  modifyHtml() += QStringLiteral("</tr></table>");
+
   return currentHtml();
 }
 

@@ -453,7 +453,17 @@ void AbstractNavigationContext::addHtml(QString html) {
 }
 
 QString AbstractNavigationContext::currentHtml() const {
-  return m_currentText;
+
+  QString result = m_currentText;
+  // TODO: Only show that the first time, or the first few times this context is shown?
+  result += QStringLiteral("<small>");
+  if (m_linkCount > 0) {
+    result += i18n("(Hold 'Alt' to show. Navigate via arrow keys, activate by pressing 'Enter')");
+  } else {
+    result += i18n("(Hold 'Alt' to show this tooltip)");
+  }
+  result += QStringLiteral("</small>");
+  return result;
 }
 
 QString AbstractNavigationContext::fontSizePrefix(bool /*shorten*/) const
