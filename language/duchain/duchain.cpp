@@ -41,6 +41,7 @@
 #include "../backgroundparser/backgroundparser.h"
 #include "util/debug.h"
 
+#include "language-features.h"
 #include "topducontext.h"
 #include "topducontextdata.h"
 #include "topducontextdynamicdata.h"
@@ -57,7 +58,7 @@
 #include "waitforupdate.h"
 #include "importers.h"
 
-#ifdef HAVE_MALLOC_TRIM
+#if HAVE_MALLOC_TRIM
 #include "malloc.h"
 #endif
 
@@ -910,12 +911,12 @@ public:
       foreach(QReadWriteLock* lock, locked)
         lock->unlock();
 
-    #ifdef HAVE_MALLOC_TRIM
+#if HAVE_MALLOC_TRIM
     // trim unused memory but keep a pad buffer of about 50 MB
     // this can greatly decrease the perceived memory consumption of kdevelop
     // see: https://sourceware.org/bugzilla/show_bug.cgi?id=14827
     malloc_trim(50 * 1024 * 1024);
-    #endif
+#endif
   }
 
   ///Checks whether the information is already loaded.
@@ -1454,14 +1455,28 @@ void DUChain::documentActivated(KDevelop::IDocument* doc)
 {
   if(sdDUChainPrivate->m_destroyed)
     return;
-  //Check whether the document has an attached environment-manager, and whether that one thinks the document needs to be updated.
-  //If yes, update it.
+
   DUChainReadLocker lock( DUChain::lock() );
   QMutexLocker l(&sdDUChainPrivate->m_chainsMutex);
+
+  auto backgroundParser = ICore::self()->languageController()->backgroundParser();
+  auto addWithHighPriority = [backgroundParser, doc]() {
+    backgroundParser->addDocument(IndexedString(doc->url()),
+                                  TopDUContext::VisibleDeclarationsAndContexts,
+                                  BackgroundParser::BestPriority);
+  };
+
   TopDUContext* ctx = DUChainUtils::standardContextForUrl(doc->url(), true);
-  if(ctx && ctx->parsingEnvironmentFile())
-    if(ctx->parsingEnvironmentFile()->needsUpdate())
-      ICore::self()->languageController()->backgroundParser()->addDocument(IndexedString(doc->url()));
+  //Check whether the document has an attached environment-manager, and whether that one thinks the document needs to be updated.
+  //If yes, update it.
+  if (ctx && ctx->parsingEnvironmentFile() && ctx->parsingEnvironmentFile()->needsUpdate()) {
+    qCDebug(LANGUAGE) << "Document needs update, using best priority since it just got activated:" << doc->url();
+    addWithHighPriority();
+  } else if (backgroundParser->managedDocuments().contains(IndexedString(doc->url()))) {
+    // increase priority if there's already parse job of this document in the queue
+    qCDebug(LANGUAGE) << "Prioritizing activated document:" << doc->url();
+    addWithHighPriority();
+  }
 }
 
 void DUChain::documentClosed(IDocument* document)
