@@ -73,6 +73,7 @@ public slots:
     Flags m_flags;
 
     QPointer<QWidget> m_widget;
+    IAssistant::Ptr m_cachedAssistant; // cache assistant, calling IAssistant::solutionAssistant() might be expensive
 };
 
 }

@@ -17,6 +17,7 @@
 */
 
 #include "problemnavigationcontext.h"
+#include <KColorScheme>
 #include <QListView>
 
 #include "util/debug.h"
@@ -43,16 +44,24 @@ QString KEY_INVOKE_ACTION(int num) { return QStringLiteral("invoke_action_%1").a
 
 QString iconForSeverity(IProblem::Severity severity)
 {
-  KIconLoader loader;
   switch (severity) {
   case IProblem::Hint:
-    return loader.iconPath(QStringLiteral("dialog-information"), KIconLoader::Small);
+    return QStringLiteral("dialog-information");
   case IProblem::Warning:
-    return loader.iconPath(QStringLiteral("dialog-warning"), KIconLoader::Small);
+    return QStringLiteral("dialog-warning");
   case IProblem::Error:
-    return loader.iconPath(QStringLiteral("dialog-error"), KIconLoader::Small);
+    return QStringLiteral("dialog-error");
   }
   return {};
+}
+
+QString htmlImg(const QString& iconName, KIconLoader::Group group)
+{
+  KIconLoader loader;
+  const int size = loader.currentSize(group);
+  return QStringLiteral("<img width='%1' height='%1' src='%2'/>")
+    .arg(size)
+    .arg(loader.iconPath(iconName, group));
 }
 
 }
@@ -148,10 +157,10 @@ QString ProblemNavigationContext::html(bool shorten)
 
   modifyHtml() += QStringLiteral("<table><tr>");
 
-  modifyHtml() += QStringLiteral("<td><img width='32' height='32' src='%1'/></td>").arg(iconPath);
+  modifyHtml() += QStringLiteral("<td>%1</td>").arg(htmlImg(iconPath, KIconLoader::Panel));
 
   // BEGIN: right column
-  modifyHtml() += QStringLiteral("<td>").arg(iconPath);
+  modifyHtml() += QStringLiteral("<td>");
 
   modifyHtml() += i18n("Problem in <i>%1</i>", m_problem->sourceString());
   modifyHtml() += QStringLiteral("<br/>");
@@ -210,18 +219,31 @@ QString ProblemNavigationContext::html(bool shorten)
     }
   }
 
-  auto assistant = m_problem->solutionAssistant();
+  if (!m_cachedAssistant) {
+    m_cachedAssistant = m_problem->solutionAssistant();
+  }
+  auto assistant = m_cachedAssistant;
   if (assistant && !assistant->actions().isEmpty()) {
     if (inlineSolutions) {
-      modifyHtml() += "<br/>";
 
+      KColorScheme scheme(QPalette::Normal, KColorScheme::View);
+      auto bgBrush = scheme.background(KColorScheme::AlternateBackground);
+      modifyHtml() += QStringLiteral("<table width='100%' style='border: 1px solid black; background-color: %1;'>")
+        .arg(bgBrush.color().name());
+
+      modifyHtml() += QStringLiteral("<tr><td>%1</td><td width='100%'>").arg(htmlImg(QStringLiteral("dialog-ok-apply"), KIconLoader::Panel));
       int index = 0;
       foreach (auto assistantAction, assistant->actions()) {
+        if (index != 0) {
+          modifyHtml() += "<br/>";
+        }
         makeLink(i18n("Solution (%1)", index + 1), KEY_INVOKE_ACTION(index),
                  NavigationAction(KEY_INVOKE_ACTION(index)));
-        modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "<br/>";
+        modifyHtml() += ": " + assistantAction->description().toHtmlEscaped();
         ++index;
       }
+      modifyHtml() += "</td></tr>";
+      modifyHtml() += QStringLiteral("</table>");
     } else {
       makeLink(i18np("Start Assistant (%1 solution)", "Start Assistant (%1 solutions)",
                assistant->actions().count()), KEY_START_ASSISTANT(),
@@ -235,7 +257,7 @@ QString ProblemNavigationContext::html(bool shorten)
 
 NavigationContextPointer ProblemNavigationContext::executeKeyAction(QString key)
 {
-  auto assistant = m_problem->solutionAssistant();
+  auto assistant = m_cachedAssistant;
   if (!assistant)
     return {};
   if (key == KEY_START_ASSISTANT()) {

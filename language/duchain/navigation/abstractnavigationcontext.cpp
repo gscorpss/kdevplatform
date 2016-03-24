@@ -330,6 +330,11 @@ void AbstractNavigationContext::previousLink()
   Q_ASSERT(m_selectedLink >= 0);
 }
 
+int AbstractNavigationContext::linkCount() const
+{
+  return m_linkCount;
+}
+
 void AbstractNavigationContext::setPrefixSuffix( const QString& prefix, const QString& suffix ) {
   m_prefix = prefix;
   m_suffix = suffix;
@@ -454,16 +459,7 @@ void AbstractNavigationContext::addHtml(QString html) {
 
 QString AbstractNavigationContext::currentHtml() const {
 
-  QString result = m_currentText;
-  // TODO: Only show that the first time, or the first few times this context is shown?
-  result += QStringLiteral("<small>");
-  if (m_linkCount > 0) {
-    result += i18n("(Hold 'Alt' to show. Navigate via arrow keys, activate by pressing 'Enter')");
-  } else {
-    result += i18n("(Hold 'Alt' to show this tooltip)");
-  }
-  result += QStringLiteral("</small>");
-  return result;
+  return m_currentText;
 }
 
 QString AbstractNavigationContext::fontSizePrefix(bool /*shorten*/) const
