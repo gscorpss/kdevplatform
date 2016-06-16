@@ -397,6 +397,9 @@ QUrl ProjectDialogProvider::askProjectConfigLocation(bool fetch, const QUrl& sta
 
     QUrl projectFileUrl = dlg.projectFileUrl();
     qCDebug(SHELL) << "selected project:" << projectFileUrl << dlg.projectName() << dlg.projectManager();
+    if ( dlg.projectManager() == "<built-in>" ) {
+        return projectFileUrl;
+    }
 
     // controls if existing project file should be saved
     bool writeProjectConfigToFile = true;
@@ -692,7 +695,6 @@ void ProjectController::openProjectForUrl(const QUrl& sourceUrl) {
     d->m_foundProjectFile = false;
 
     while(!testAt.path().isEmpty()) {
-        QUrl testProjectFile(testAt);
         KIO::ListJob* job = KIO::listDir(testAt);
 
         connect(job, &KIO::ListJob::entries, this, &ProjectController::eventuallyOpenProjectFile);

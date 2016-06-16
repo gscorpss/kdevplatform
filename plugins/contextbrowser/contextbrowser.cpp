@@ -156,9 +156,9 @@ private:
 
 KXMLGUIClient* ContextBrowserPlugin::createGUIForMainWindow( Sublime::MainWindow* window )
 {
-    KXMLGUIClient* ret = KDevelop::IPlugin::createGUIForMainWindow( window );
-
     m_browseManager = new BrowseManager(this);
+
+    KXMLGUIClient* ret = KDevelop::IPlugin::createGUIForMainWindow(window);
 
     connect(ICore::self()->documentController(), &IDocumentController::documentJumpPerformed, this, &ContextBrowserPlugin::documentJumpPerformed);
 
@@ -226,7 +226,13 @@ KXMLGUIClient* ContextBrowserPlugin::createGUIForMainWindow( Sublime::MainWindow
 void ContextBrowserPlugin::createActionsForMainWindow(Sublime::MainWindow* window, QString& xmlFile,
                                                       KActionCollection& actions)
 {
-    xmlFile = QStringLiteral("kdevcontextbrowser.rc") ;
+    xmlFile = QStringLiteral("kdevcontextbrowser.rc");
+
+    QAction* sourceBrowseMode = actions.addAction(QStringLiteral("source_browse_mode"));
+    sourceBrowseMode->setText( i18n("Source &Browse Mode") );
+    sourceBrowseMode->setIcon( QIcon::fromTheme(QStringLiteral("arrow-up")) );
+    sourceBrowseMode->setCheckable(true);
+    connect(sourceBrowseMode, &QAction::triggered, m_browseManager, &BrowseManager::setBrowsing);
 
     QAction* previousContext = actions.addAction(QStringLiteral("previous_context"));
     previousContext->setText( i18n("&Previous Visited Context") );
@@ -582,8 +588,12 @@ void ContextBrowserPlugin::showToolTip(KTextEditor::View* view, KTextEditor::Cur
       auto viewUrl = view->document()->url();
       itemRange = DUChainUtils::itemRangeUnderCursor(viewUrl, position);
     }
-    tooltip->setHandleRect(getItemBoundingRect(view, itemRange));
+    tooltip->setHandleRect(KTextEditorHelpers::getItemBoundingRect(view, itemRange));
     tooltip->resize( navigationWidget->sizeHint() + QSize(10, 10) );
+    QObject::connect( view, &KTextEditor::View::verticalScrollPositionChanged,
+                      this, &ContextBrowserPlugin::hideToolTip );
+    QObject::connect( view, &KTextEditor::View::horizontalScrollPositionChanged,
+                      this, &ContextBrowserPlugin::hideToolTip );
     qCDebug(PLUGIN_CONTEXTBROWSER) << "tooltip size" << tooltip->size();
     m_currentToolTip = tooltip;
     m_currentNavigationWidget = navigationWidget;
@@ -974,16 +984,16 @@ void ContextBrowserPlugin::switchUse(bool forward)
           //Try jumping from declaration to definition
           target = FunctionDefinition::definition(decl);
 
-          if(target && target != decl) {
-            KTextEditor::Cursor jumpTo = target->rangeInCurrentRevision().start();
-            QUrl document = target->url().toUrl();
-            lock.unlock();
-            core()->documentController()->openDocument( document, cursorToRange(jumpTo)  );
-            return;
-          }else{
-            //Always work with the declaration instead of the definition
-            decl = DUChainUtils::declarationForDefinition(decl, chosen);
-          }
+        if(target && target != decl) {
+          KTextEditor::Cursor jumpTo = target->rangeInCurrentRevision().start();
+          QUrl document = target->url().toUrl();
+          lock.unlock();
+          core()->documentController()->openDocument( document, cursorToRange(jumpTo)  );
+          return;
+        }else{
+          //Always work with the declaration instead of the definition
+          decl = DUChainUtils::declarationForDefinition(decl, chosen);
+        }
       }
 
       if(!decl) {

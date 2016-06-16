@@ -27,6 +27,9 @@ Rectangle
     property string pageIcon
     property real marginLeft: toolbar.x+toolbar.width
     property real margins: 5
+    color: pal.base
+
+    SystemPalette { id: pal }
     
     Rectangle {
         id: toolbar
@@ -62,7 +65,7 @@ Rectangle
             left: parent.left
             margins: 5
         }
-        source: "image://icon/" + bg.pageIcon
+        source: bg.pageIcon !== "" ? "image://icon/" + bg.pageIcon : ""
         width: 64
         height: width
     }

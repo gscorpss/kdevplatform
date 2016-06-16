@@ -67,7 +67,7 @@ void IVariableController::stateChanged(IDebugSession::DebuggerState state)
         }
 
         for (int i=0; i < variableCollection()->watches()->childCount(); ++i) {
-            Variable *var = dynamic_cast<Variable*>(variableCollection()->watches()->child(i));
+            Variable *var = qobject_cast<Variable*>(variableCollection()->watches()->child(i));
             if (var) {
                 var->setInScope(false);
             }
@@ -79,8 +79,6 @@ void IVariableController::updateIfFrameOrThreadChanged()
 {
     IFrameStackModel *sm = session()->frameStackModel();
     if (sm->currentThread() != m_activeThread || sm->currentFrame() != m_activeFrame) {
-        m_activeThread = sm->currentThread();
-        m_activeFrame = sm->currentFrame();
         variableCollection()->root()->resetChanged();
         update();
     }
@@ -103,6 +101,11 @@ void IVariableController::handleEvent(IDebugSession::event_t event)
         if (m_autoUpdate != UpdateNone) {
             updateIfFrameOrThreadChanged();
         }
+
+        // update our cache of active thread/frame regardless of m_autoUpdate
+        // to keep them synced when user currently hides the variable list
+        m_activeThread = session()->frameStackModel()->currentThread();
+        m_activeFrame = session()->frameStackModel()->currentFrame();
         break;
 
     default:

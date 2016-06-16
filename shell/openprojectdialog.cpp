@@ -13,6 +13,8 @@
 #include "projectinfopage.h"
 
 #include <QFileInfo>
+#include <QFileDialog>
+#include <QDebug>
 
 #include <KColorScheme>
 #include <KIO/StatJob>
@@ -22,10 +24,46 @@
 
 #include "core.h"
 #include "uicontroller.h"
+#include "plugincontroller.h"
 #include "mainwindow.h"
 #include "shellextension.h"
 #include "projectsourcepage.h"
 #include <interfaces/iprojectcontroller.h>
+
+namespace
+{
+struct URLInfo
+{
+    bool isValid;
+    bool isDir;
+    QString extension;
+};
+
+URLInfo getUrlInfo(const QUrl& url)
+{
+    URLInfo ret;
+    ret.isValid = false;
+
+    if (url.isLocalFile()) {
+        QFileInfo info(url.toLocalFile());
+        ret.isValid = info.exists();
+        if (ret.isValid) {
+            ret.isDir = info.isDir();
+            ret.extension = info.suffix();
+        }
+    } else if (url.isValid()) {
+        KIO::StatJob* statJob = KIO::stat(url, KIO::HideProgressInfo);
+        KJobWidgets::setWindow(statJob, KDevelop::Core::self()->uiControllerInternal()->defaultMainWindow());
+        ret.isValid = statJob->exec(); // TODO: do this asynchronously so that the user isn't blocked while typing every letter of the hostname in sftp://hostname
+        if (ret.isValid) {
+            KIO::UDSEntry entry = statJob->statResult();
+            ret.isDir = entry.isDir();
+            ret.extension = QFileInfo(entry.stringValue(KIO::UDSEntry::UDS_NAME)).suffix();
+        }
+    }
+    return ret;
+}
+}
 
 namespace KDevelop
 {
@@ -38,6 +76,28 @@ OpenProjectDialog::OpenProjectDialog( bool fetch, const QUrl& startUrl, QWidget*
 {
     resize(QSize(700, 500));
 
+    const bool useKdeFileDialog = qEnvironmentVariableIsSet("KDE_FULL_SESSION");
+    QStringList filters, allEntry;
+    QString filterFormat = useKdeFileDialog
+                         ? QStringLiteral("%1|%2 (%1)")
+                         : QStringLiteral("%2 (%1)");
+    allEntry << "*." + ShellExtension::getInstance()->projectFileExtension();
+    filters << filterFormat.arg("*." + ShellExtension::getInstance()->projectFileExtension(), ShellExtension::getInstance()->projectFileDescription());
+    QVector<KPluginMetaData> plugins = ICore::self()->pluginController()->queryExtensionPlugins(QStringLiteral("org.kdevelop.IProjectFileManager"));
+    foreach(const KPluginMetaData& info, plugins)
+    {
+        QStringList filter = KPluginMetaData::readStringList(info.rawData(), QStringLiteral("X-KDevelop-ProjectFilesFilter"));
+        QString desc = info.value(QStringLiteral("X-KDevelop-ProjectFilesFilterDescription"));
+
+        m_projectFilters.insert(info.name(), filter);
+        m_projectPlugins.insert(info.name(), info);
+        allEntry += filter;
+        filters << filterFormat.arg(filter.join(QStringLiteral(" ")), desc);
+    }
+
+    if (useKdeFileDialog)
+        filters.prepend(i18n("%1|All Project Files (%1)", allEntry.join(QStringLiteral(" "))));
+
     QUrl start = startUrl.isValid() ? startUrl : Core::self()->projectController()->projectsBaseDirectory();
     start = start.adjusted(QUrl::NormalizePathSegments);
     KPageWidgetItem* currentPage = 0;
@@ -49,20 +109,30 @@ OpenProjectDialog::OpenProjectDialog( bool fetch, const QUrl& startUrl, QWidget*
         currentPage = sourcePage;
     }
 
-    openPageWidget = new OpenProjectPage( start, this );
-    connect( openPageWidget, &OpenProjectPage::urlSelected, this, &OpenProjectDialog::validateOpenUrl );
-    connect( openPageWidget, &OpenProjectPage::accepted, this, &OpenProjectDialog::openPageAccepted );
-    openPage = addPage( openPageWidget, i18n("Select a build system setup file, existing KDevelop project, "
-                                             "or any folder to open as a project") );
+    if (useKdeFileDialog) {
+        openPageWidget = new OpenProjectPage( start, filters, this );
+        connect( openPageWidget, &OpenProjectPage::urlSelected, this, &OpenProjectDialog::validateOpenUrl );
+        connect( openPageWidget, &OpenProjectPage::accepted, this, &OpenProjectDialog::openPageAccepted );
+        openPage = addPage( openPageWidget, i18n("Select a build system setup file, existing KDevelop project, "
+                                                 "or any folder to open as a project") );
 
-    if( !fetch ) {
-        currentPage = openPage;
+        if (!currentPage) {
+            currentPage = openPage;
+        }
+    } else {
+        nativeDialog = new QFileDialog(this, i18n("Open Project"));
+        nativeDialog->setDirectoryUrl(start);
+        nativeDialog->setFileMode(QFileDialog::Directory);
     }
 
     ProjectInfoPage* page = new ProjectInfoPage( this );
     connect( page, &ProjectInfoPage::projectNameChanged, this, &OpenProjectDialog::validateProjectName );
     connect( page, &ProjectInfoPage::projectManagerChanged, this, &OpenProjectDialog::validateProjectManager );
     projectInfoPage = addPage( page, i18n("Project Information") );
+
+    if (!currentPage) {
+        currentPage = projectInfoPage;
+    }
 
     setValid( sourcePage, false );
     setValid( openPage, false );
@@ -73,6 +143,34 @@ OpenProjectDialog::OpenProjectDialog( bool fetch, const QUrl& startUrl, QWidget*
     setWindowTitle(i18n("Open Project"));
 }
 
+bool OpenProjectDialog::execNativeDialog()
+{
+    while (true)
+    {
+        if (nativeDialog->exec()) {
+            QUrl selectedUrl = nativeDialog->selectedUrls().at(0);
+            if (getUrlInfo(selectedUrl).isValid) {
+                // validate directory first to populate m_projectName and m_projectManager
+                validateOpenUrl(selectedUrl.adjusted(QUrl::RemoveFilename));
+                validateOpenUrl(selectedUrl);
+                return true;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+}
+
+int OpenProjectDialog::exec()
+{
+    if (nativeDialog && !execNativeDialog()) {
+        reject();
+        return QDialog::Rejected;
+    }
+    return KAssistantDialog::exec();
+}
+
 void OpenProjectDialog::validateSourcePage(bool valid)
 {
     setValid(sourcePage, valid);
@@ -81,108 +179,105 @@ void OpenProjectDialog::validateSourcePage(bool valid)
 
 void OpenProjectDialog::validateOpenUrl( const QUrl& url_ )
 {
-    bool isDir = false;
-    QString extension;
-    bool isValid = false;
+    URLInfo urlInfo = getUrlInfo(url_);
 
     const QUrl url = url_.adjusted(QUrl::StripTrailingSlash);
 
-    if( url.isLocalFile() )
-    {
-        QFileInfo info( url.toLocalFile() );
-        isValid = info.exists();
-        if ( isValid ) {
-            isDir = info.isDir();
-            extension = info.suffix();
+    // openPage is used only in KDE
+    if (openPage) {
+        if ( urlInfo.isValid ) {
+            // reset header
+            openPage->setHeader(i18n("Open \"%1\" as project", url.fileName()));
+        } else {
+            // report error
+            KColorScheme scheme(palette().currentColorGroup());
+            const QString errorMsg = i18n("Selected URL is invalid");
+            openPage->setHeader(QStringLiteral("<font color='%1'>%2</font>")
+                .arg(scheme.foreground(KColorScheme::NegativeText).color().name(), errorMsg)
+            );
+            setAppropriate( projectInfoPage, false );
+            setAppropriate( openPage, true );
+            setValid( openPage, false );
+            return;
         }
-    } else if ( url.isValid() )
-    {
-        KIO::StatJob* statJob = KIO::stat( url, KIO::HideProgressInfo );
-        KJobWidgets::setWindow(statJob, Core::self()->uiControllerInternal()->defaultMainWindow() );
-        isValid = statJob->exec(); // TODO: do this asynchronously so that the user isn't blocked while typing every letter of the hostname in sftp://hostname
-        if ( isValid ) {
-            KIO::UDSEntry entry = statJob->statResult();
-            isDir = entry.isDir();
-            extension = QFileInfo( entry.stringValue( KIO::UDSEntry::UDS_NAME ) ).suffix();
-        }
-    }
-
-    if ( isValid ) {
-        // reset header
-        openPage->setHeader(i18n("Open \"%1\" as project", url.fileName()));
-    } else {
-        // report error
-        KColorScheme scheme(palette().currentColorGroup());
-        const QString errorMsg = i18n("Selected URL is invalid");
-        openPage->setHeader(QStringLiteral("<font color='%1'>%2</font>")
-            .arg(scheme.foreground(KColorScheme::NegativeText).color().name(), errorMsg)
-        );
-        setAppropriate( projectInfoPage, false );
-        setAppropriate( openPage, true );
-        setValid( openPage, false );
-        return;
     }
 
     m_selected = url;
 
-    if( isDir || extension != ShellExtension::getInstance()->projectFileExtension() )
+    if( urlInfo.isDir || urlInfo.extension != ShellExtension::getInstance()->projectFileExtension() )
     {
         setAppropriate( projectInfoPage, true );
         m_url = url;
-        if( !isDir ) {
+        if( !urlInfo.isDir ) {
             m_url = m_url.adjusted(QUrl::StripTrailingSlash | QUrl::RemoveFilename);
         }
         ProjectInfoPage* page = qobject_cast<ProjectInfoPage*>( projectInfoPage->widget() );
         if( page )
         {
             page->setProjectName( m_url.fileName() );
-            OpenProjectPage* page2 = qobject_cast<OpenProjectPage*>( openPage->widget() );
-            if( page2 )
-            {
-                // Default manager
-                page->setProjectManager( QStringLiteral("Generic Project Manager") );
-                // clear the filelist
-                m_fileList.clear();
+            // clear the filelist
+            m_fileList.clear();
 
-                if( isDir ) {
-                    // If a dir was selected fetch all files in it
-                    KIO::ListJob* job = KIO::listDir( m_url );
-                    connect( job, &KIO::ListJob::entries,
-                                  this, &OpenProjectDialog::storeFileList);
-                    KJobWidgets::setWindow(job, Core::self()->uiController()->activeMainWindow());
-                    job->exec();
-                } else {
-                    // Else we'lll just take the given file
-                    m_fileList << url.fileName();
+            if( urlInfo.isDir ) {
+                // If a dir was selected fetch all files in it
+                KIO::ListJob* job = KIO::listDir( m_url );
+                connect( job, &KIO::ListJob::entries,
+                                this, &OpenProjectDialog::storeFileList);
+                KJobWidgets::setWindow(job, Core::self()->uiController()->activeMainWindow());
+                job->exec();
+            } else {
+                // Else we'll just take the given file
+                m_fileList << url.fileName();
+            }
+            // Now find a manager for the file(s) in our filelist.
+            QVector<ProjectFileChoice> choices;
+            Q_FOREACH ( const auto& file, m_fileList ) {
+                auto plugins = projectManagerForFile(file);
+                if ( plugins.contains("<built-in>") ) {
+                    plugins.removeAll("<built-in>");
+                    choices.append({i18n("Open existing file \"%1\"", file), "<built-in>", QString()});
                 }
-                // Now find a manager for the file(s) in our filelist.
-                bool managerFound = false;
-                foreach( const QString& manager, page2->projectFilters().keys() )
-                {
-                    foreach( const QString& filterexp, page2->projectFilters().value(manager) )
-                    {
-                        if( !m_fileList.filter( QRegExp( filterexp, Qt::CaseSensitive, QRegExp::Wildcard ) ).isEmpty() )
-                        {
-                            managerFound = true;
-                            break;
-                        }
-                    }
-                    if( managerFound )
-                    {
-                        page->setProjectManager( manager );
-                        break;
-                    }
+                Q_FOREACH ( const auto& plugin, plugins ) {
+                    auto meta = m_projectPlugins.value(plugin);
+                    choices.append({file + QString(" (%1)").arg(plugin), meta.pluginId(), meta.iconName()});
                 }
             }
+            Q_FOREACH ( const auto& plugin, m_projectFilters.keys() ) {
+                qDebug() << plugin << m_projectFilters.value(plugin);
+                if ( m_projectFilters.value(plugin).isEmpty() ) {
+                    // that works in any case
+                    auto meta = m_projectPlugins.value(plugin);
+                    choices.append({plugin, meta.pluginId(), meta.iconName()});
+                }
+            }
+            page->populateProjectFileCombo(choices);
         }
         m_url.setPath( m_url.path() + '/' + m_url.fileName() + '.' + ShellExtension::getInstance()->projectFileExtension() );
-    } else
-    {
+    } else {
         setAppropriate( projectInfoPage, false );
         m_url = url;
     }
     validateProjectInfo();
     setValid( openPage, true );
+}
+
+QStringList OpenProjectDialog::projectManagerForFile(const QString& file) const
+{
+    QStringList ret;
+    foreach( const QString& manager, m_projectFilters.keys() )
+    {
+        foreach( const QString& filterexp, m_projectFilters.value(manager) )
+        {
+            QRegExp exp( filterexp, Qt::CaseSensitive, QRegExp::Wildcard );
+            if ( exp.exactMatch(file) ) {
+                ret.append(manager);
+            }
+        }
+    }
+    if ( file.endsWith(ShellExtension::getInstance()->projectFileExtension()) ) {
+        ret.append("<built-in>");
+    }
+    return ret;
 }
 
 void OpenProjectDialog::openPageAccepted()

@@ -149,7 +149,7 @@ public:
     /// @return new session GUID to try or an empty string if application startup shall be aborted
     static QString handleLockedSession( const QString& sessionName, const QString& currentSessionId, const SessionRunInfo& runInfo );
 
-    void plugActions();
+    void updateXmlGuiActionList();
 
     void emitQuitSession()
     {
@@ -168,7 +168,6 @@ Q_SIGNALS:
     void quitSession();
 private:
     Q_PRIVATE_SLOT( d, void newSession() )
-    Q_PRIVATE_SLOT( d, void configureSessions() )
     Q_PRIVATE_SLOT( d, void deleteCurrentSession() )
     Q_PRIVATE_SLOT( d, void renameSession() )
     Q_PRIVATE_SLOT( d, void loadSessionFromAction( QAction* ) )

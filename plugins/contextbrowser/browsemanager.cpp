@@ -95,13 +95,14 @@ QList<KTextEditor::View*> EditorViewWatcher::allViews() {
 void BrowseManager::eventuallyStartDelayedBrowsing() {
     avoidMenuAltFocus();
 
-    if(m_browsingByKey && m_browsingStartedInView)
+    if(m_browsingByKey == Qt::Key_Alt && m_browsingStartedInView)
         emit startDelayedBrowsing(m_browsingStartedInView);
 }
 
 BrowseManager::BrowseManager(ContextBrowserPlugin* controller)
     : QObject(controller)
     , m_plugin(controller)
+    , m_browsing(false)
     , m_browsingByKey(0)
     , m_watcher(this)
 {
@@ -131,7 +132,7 @@ BrowseManager::JumpLocation BrowseManager::determineJumpLoc(KTextEditor::Cursor 
     }
 
     // Step 1: Look for a special language object(Macro, included header, etc.)
-    for (const auto& language: ICore::self()->languageController()->languagesForUrl(viewUrl)) {
+    foreach (const auto& language, ICore::self()->languageController()->languagesForUrl(viewUrl)) {
         auto jumpTo = language->specialLanguageObjectJumpCursor(viewUrl, textCursor);
         if (jumpTo.first.isValid() && jumpTo.second.isValid()) {
             return {jumpTo};
@@ -208,7 +209,7 @@ bool BrowseManager::eventFilter(QObject * watched, QEvent * event) {
     QFocusEvent* focusEvent = dynamic_cast<QFocusEvent*>(event);
     //Eventually stop key-browsing
     if((keyEvent && m_browsingByKey && keyEvent->key() == m_browsingByKey && keyEvent->type() == QEvent::KeyRelease)
-        || (focusEvent && focusEvent->lostFocus())) {
+        || (focusEvent && focusEvent->lostFocus()) || event->type() == QEvent::WindowDeactivate) {
         m_browsingByKey = 0;
         emit stopDelayedBrowsing();
     }
@@ -226,21 +227,15 @@ bool BrowseManager::eventFilter(QObject * watched, QEvent * event) {
         }
     }
 
-    if(!m_browsingByKey) {
+    if(!m_browsing && !m_browsingByKey) {
         resetChangedCursor();
         return false;
     }
 
     if(mouseEvent) {
-        KTextEditor::View* iface = dynamic_cast<KTextEditor::View*>(view);
-        if(!iface) {
-            qCDebug(PLUGIN_CONTEXTBROWSER) << "Update kdelibs for the browsing-mode to work";
-            return false;
-        }
-
         QPoint coordinatesInView = widget->mapTo(view, mouseEvent->pos());
 
-        KTextEditor::Cursor textCursor = iface->coordinatesToCursor(coordinatesInView);
+        KTextEditor::Cursor textCursor = view->coordinatesToCursor(coordinatesInView);
         if (textCursor.isValid()) {
             JumpLocation jumpTo = determineJumpLoc(textCursor, view->document()->url());
             if (jumpTo.isValid()) {
@@ -320,6 +315,20 @@ void BrowseManager::viewAdded(KTextEditor::View* view) {
 
 void Watcher::viewAdded(KTextEditor::View* view) {
     m_manager->viewAdded(view);
+}
+
+void BrowseManager::setBrowsing(bool enabled) {
+    if(enabled == m_browsing)
+        return;
+    m_browsing = enabled;
+
+    //This collects all the views
+    if(enabled) {
+        qCDebug(PLUGIN_CONTEXTBROWSER) << "Enabled browsing-mode";
+    }else{
+        qCDebug(PLUGIN_CONTEXTBROWSER) << "Disabled browsing-mode";
+        resetChangedCursor();
+    }
 }
 
 Watcher::Watcher(BrowseManager* manager)

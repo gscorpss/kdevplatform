@@ -28,12 +28,12 @@ set(KDevPlatformShell_LIB_SRCS
     languagecontroller.cpp
     statusbar.cpp
     runcontroller.cpp
+    unitylauncher.cpp
     sessioncontroller.cpp
     session.cpp
     sessionlock.cpp
     sessionchooserdialog.cpp
     savedialog.cpp
-    sessiondialog.cpp
     sourceformattercontroller.cpp
     completionsettings.cpp
     openprojectpage.cpp
@@ -90,7 +90,6 @@ kconfig_add_kcfg_files(KDevPlatformShell_LIB_SRCS
 )
 
 ki18n_wrap_ui(KDevPlatformShell_LIB_SRCS
-    sessiondialog.ui
     projectinfopage.ui
     launchconfigurationdialog.ui
     projectsourcepage.ui

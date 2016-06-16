@@ -28,6 +28,7 @@ Boston, MA 02110-1301, USA.
 #include <QApplication>
 #include <QDBusConnectionInterface>
 #include <QGroupBox>
+#include <QInputDialog>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListView>
@@ -48,7 +49,6 @@ Boston, MA 02110-1301, USA.
 #include "session.h"
 #include "core.h"
 #include "uicontroller.h"
-#include "sessiondialog.h"
 #include "shellextension.h"
 #include "sessionlock.h"
 #include "sessionchooserdialog.h"
@@ -140,12 +140,6 @@ public:
 #endif
     }
 
-    void configureSessions()
-    {
-        SessionDialog dlg(ICore::self()->uiController()-> activeMainWindow());
-        dlg.exec();
-    }
-
     void deleteCurrentSession()
     {
         int choice = KMessageBox::warningContinueCancel(Core::self()->uiController()->activeMainWindow(), i18n("The current session and all contained settings will be deleted. The projects will stay unaffected. Do you really want to continue?"));
@@ -159,33 +153,15 @@ public:
 
     void renameSession()
     {
-        QDialog dialog;
-        dialog.setWindowTitle(i18n("Rename Session"));
-
-        auto mainLayout = new QVBoxLayout(&dialog);
-
-        QGroupBox box;
-        QHBoxLayout layout(&box);
-        box.setTitle(i18n("New Session Name"));
-        QLineEdit edit;
-        layout.addWidget(&edit);
-        mainLayout->addWidget(&box);
-
-        auto buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-        auto okButton = buttonBox->button(QDialogButtonBox::Ok);
-        okButton->setDefault(true);
-        okButton->setShortcut(Qt::CTRL | Qt::Key_Return);
-        connect(buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-        connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-        mainLayout->addWidget(buttonBox);
-
-        edit.setText(q->activeSession()->name());
-        edit.setFocus();
-
-        if(dialog.exec() == QDialog::Accepted)
-        {
-            static_cast<Session*>(q->activeSession())->setName(edit.text());
+        bool ok;
+        auto newSessionName = QInputDialog::getText(Core::self()->uiController()->activeMainWindow(),
+                                                    i18n("Rename Session"), i18n("New Session Name:"),
+                                                    QLineEdit::Normal, q->activeSession()->name(), &ok);
+        if (ok) {
+            static_cast<Session*>(q->activeSession())->setName(newSessionName);
         }
+
+        q->updateXmlGuiActionList(); // resort
     }
 
     bool loadSessionExternally( Session* s )
@@ -227,15 +203,10 @@ public:
         return result;
     }
 
-    void loadSessionFromAction( QAction* a )
+    void loadSessionFromAction(QAction* action)
     {
-        foreach( Session* s, sessionActions.keys() )
-        {
-            if( s->id() == QUuid( a->data().toString() ) && s != activeSession ) {
-                loadSessionExternally( s );
-                break;
-            }
-        }
+        auto session = action->data().value<Session*>();
+        loadSessionExternally(session);
     }
 
     void addSession( Session* s )
@@ -248,13 +219,10 @@ public:
         QAction* a = new QAction( grp );
         a->setText( s->description() );
         a->setCheckable( false );
-        a->setData( s->id().toString() );
+        a->setData(QVariant::fromValue<Session*>(s));
 
         sessionActions[s] = a;
         q->actionCollection()->addAction( "session_"+s->id().toString(), a );
-        q->unplugActionList( QStringLiteral("available_sessions") );
-        q->plugActionList( QStringLiteral("available_sessions"), grp->actions() );
-
         connect( s, &Session::sessionUpdated, this, &SessionControllerPrivate::sessionUpdated );
         sessionUpdated( s );
     }
@@ -319,13 +287,6 @@ SessionController::SessionController( QObject *parent )
     actionCollection()->setDefaultShortcut( action, Qt::CTRL | Qt::Key_Q );
     action->setIcon(QIcon::fromTheme(QStringLiteral("application-exit")));
 
-    #if 0
-    action = actionCollection()->addAction( "configure_sessions", this, SLOT(configureSessions()) );
-    action->setText( i18n("Configure Sessions...") );
-    action->setToolTip( i18n("Create/Delete/Activate Sessions") );
-    action->setWhatsThis( i18n( "Shows a dialog to Create/Delete Sessions and set a new active session." ) );
-    #endif
-
     d->grp = new QActionGroup( this );
     connect( d->grp, &QActionGroup::triggered, this, [&] (QAction* a) { d->loadSessionFromAction(a); } );
 }
@@ -381,7 +342,10 @@ void SessionController::initialize( const QString& session )
             d->addSession( ses );
         }
     }
+
     loadDefaultSession( session );
+
+    updateXmlGuiActionList();
 }
 
 
@@ -432,6 +396,7 @@ Session* SessionController::createSession( const QString& name )
         s->setName( name );
     }
     d->addSession( s );
+    updateXmlGuiActionList();
     return s;
 }
 
@@ -516,13 +481,23 @@ QString SessionController::cloneSession( const QString& nameOrid )
     Session* newSession = new Session( id.toString() );
     newSession->setName( i18n( "Copy of %1", origSession->name() ) );
     d->addSession(newSession);
+    updateXmlGuiActionList();
     return newSession->name();
 }
 
-void SessionController::plugActions()
+void SessionController::updateXmlGuiActionList()
 {
     unplugActionList( QStringLiteral("available_sessions") );
-    plugActionList( QStringLiteral("available_sessions"), d->grp->actions() );
+
+    if (d->grp) {
+        auto actions = d->grp->actions();
+        std::sort(actions.begin(), actions.end(), [](const QAction* lhs, const QAction* rhs) {
+            auto s1 = lhs->data().value<Session*>();
+            auto s2 = rhs->data().value<Session*>();
+            return QString::localeAwareCompare(s1->description(), s2->description()) < 0;
+        });
+        plugActionList(QStringLiteral("available_sessions"), actions);
+    }
 }
 
 
