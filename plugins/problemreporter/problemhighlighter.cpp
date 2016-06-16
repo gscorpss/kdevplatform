@@ -97,6 +97,7 @@ ProblemHighlighter::~ProblemHighlighter()
 
 void ProblemHighlighter::setProblems(const QVector<IProblem::Ptr>& problems)
 {
+    qDebug() << "updating problem highlight";
     if (!m_document)
         return;
 

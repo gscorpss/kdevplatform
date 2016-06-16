@@ -26,6 +26,8 @@
 
 #include <interfaces/iassistant.h>
 
+#include <ktexteditor/range.h>
+
 namespace KTextEditor {
 class Document;
 class View;
@@ -75,7 +77,7 @@ public:
      *
      * Reimplement in subclass
      */
-    virtual void textChanged(KTextEditor::View* view, const KTextEditor::Range& invocationRange,
+    virtual void textChanged(KTextEditor::Document* doc, const KTextEditor::Range& invocationRange,
                              const QString& removedText = QString()) = 0;
     /**
      * Whether it's worth showing this assistant to the user
@@ -83,6 +85,11 @@ public:
      * Reimplement in subclass
      */
     virtual bool isUseful() const = 0;
+
+    /**
+     * The range the assistant should be displayed in.
+     */
+    virtual KTextEditor::Range displayRange() const = 0;
 
 private:
     struct Private;
