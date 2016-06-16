@@ -148,12 +148,11 @@ QVector<KDevelop::Problem::Ptr> KDevelop::StaticAssistantsManager::problemsForCo
 
             auto p = new KDevelop::StaticAssistantProblem();
             auto range = assistant->displayRange();
-            // FIXME Range{m_eventualRange.start() - Cursor(0, 5), m_eventualRange.end() + Cursor(0, 5)};
             qDebug() << "range:" << range;
             p->setFinalLocation(DocumentRange(doc, range));
             p->setSource(KDevelop::IProblem::SemanticAnalysis);
             p->setSeverity(KDevelop::IProblem::Warning);
-            p->setDescription("TEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEST");
+            p->setDescription(assistant->title());
             p->setSolutionAssistant(IAssistant::Ptr(assistant.data()));
 
             ret.append(KDevelop::Problem::Ptr(p));
