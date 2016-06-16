@@ -140,6 +140,7 @@ void ProblemReporterPlugin::updateReady(const IndexedString& url, const KDevelop
       if ( !lock.locked() ) {
         return;
       }
+      ICore::self()->languageController()->staticAssistantsManager()->notifyAssistants(url, top);
       auto assistantProblems = ICore::self()->languageController()->staticAssistantsManager()->problemsForContext(top);
       Q_FOREACH ( const auto p, assistantProblems ) {
         qDebug() << "adding problem:" << p << "assistant:" << p->solutionAssistant().data() << p->solutionAssistant()->actions().size();

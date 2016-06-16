@@ -23,6 +23,8 @@
 #define KDEVPLATFORM_STATICASSISTANT_H
 
 #include <language/languageexport.h>
+#include <serialization/indexedstring.h>
+#include <language/duchain/topducontext.h>
 
 #include <interfaces/iassistant.h>
 
@@ -90,6 +92,8 @@ public:
      * The range the assistant should be displayed in.
      */
     virtual KTextEditor::Range displayRange() const = 0;
+
+    virtual void updateReady(const IndexedString&, const KDevelop::ReferencedTopDUContext&) { }
 
 private:
     struct Private;

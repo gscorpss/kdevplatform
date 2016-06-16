@@ -35,6 +35,8 @@
 #include <language/duchain/problem.h>
 #include <util/richtextpushbutton.h>
 
+#include <language/duchain/duchain.h>
+
 using namespace KDevelop;
 
 namespace {
@@ -110,6 +112,9 @@ NavigationContextPointer AssistantNavigationContext::executeKeyAction(QString ke
     auto action = m_assistant->actions().value(index);
     if (action) {
       action->execute();
+      if ( topContext() ) {
+        DUChain::self()->updateContextForUrl(topContext()->url(), TopDUContext::ForceUpdate);
+      }
     } else {
       qCWarning(LANGUAGE()) << "Action got removed in-between";
       return {};
@@ -268,6 +273,9 @@ NavigationContextPointer ProblemNavigationContext::executeKeyAction(QString key)
     auto action = assistant->actions().value(index);
     if (action) {
       action->execute();
+      if ( topContext() ) {
+        DUChain::self()->updateContextForUrl(topContext()->url(), TopDUContext::ForceUpdate);
+      }
     } else {
       qCWarning(LANGUAGE()) << "Action got removed in-between";
       return {};
@@ -287,6 +295,9 @@ void ProblemNavigationContext::executeAction(int index)
   auto action = assistant->actions().value(index);
   if (action) {
     action->execute();
+    if ( topContext() ) {
+      DUChain::self()->updateContextForUrl(topContext()->url(), TopDUContext::ForceUpdate);
+    }
   } else {
     qCWarning(LANGUAGE()) << "No such action";
     return;

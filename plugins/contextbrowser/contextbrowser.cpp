@@ -513,7 +513,9 @@ QWidget* ContextBrowserPlugin::navigationWidgetForPosition(KTextEditor::View* vi
 
       m_currentToolTipProblem = problem;
       auto widget = new AbstractNavigationWidget;
-      widget->setContext(NavigationContextPointer(new ProblemNavigationContext(problem)));
+      auto context = new ProblemNavigationContext(problem);
+      context->setTopContext(TopDUContextPointer(topContext));
+      widget->setContext(NavigationContextPointer(context));
       return widget;
     }
   }

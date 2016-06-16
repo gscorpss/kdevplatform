@@ -62,6 +62,7 @@ public:
     void registerAssistant(const StaticAssistant::Ptr assistant);
     void unregisterAssistant(const StaticAssistant::Ptr assistant);
     QVector<StaticAssistant::Ptr> registeredAssistants() const;
+    void notifyAssistants(const IndexedString& url, const KDevelop::ReferencedTopDUContext& context);
 
     QVector<KDevelop::Problem::Ptr> problemsForContext(const ReferencedTopDUContext& top);
 

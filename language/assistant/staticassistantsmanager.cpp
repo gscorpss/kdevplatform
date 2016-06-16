@@ -122,12 +122,19 @@ void StaticAssistantsManager::Private::textRemoved(Document* doc, const Range& r
     }
 }
 
+void StaticAssistantsManager::notifyAssistants(const IndexedString& url, const KDevelop::ReferencedTopDUContext& context)
+{
+    Q_FOREACH ( auto assistant, d->m_registeredAssistants ) {
+        assistant->updateReady(url, context);
+    }
+}
+
 QVector<KDevelop::Problem::Ptr> KDevelop::StaticAssistantsManager::problemsForContext(const KDevelop::ReferencedTopDUContext& top)
 {
     qDebug() << "called";
 
     View* view = ICore::self()->documentController()->activeTextDocumentView();
-    if (!view || !top) {
+    if (!view || !top || IndexedString(view->document()->url()) != top->url()) {
         return {};
     }
 
