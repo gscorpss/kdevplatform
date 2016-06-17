@@ -163,7 +163,7 @@ QString ProblemNavigationContext::html(bool shorten)
 
   modifyHtml() += QStringLiteral("<table><tr>");
 
-  modifyHtml() += QStringLiteral("<td>%1</td>").arg(htmlImg(iconPath, KIconLoader::Panel));
+  modifyHtml() += QStringLiteral("<td valign=\"middle\">%1</td>").arg(htmlImg(iconPath, KIconLoader::Panel));
 
   // BEGIN: right column
   modifyHtml() += QStringLiteral("<td>");
@@ -186,8 +186,9 @@ QString ProblemNavigationContext::html(bool shorten)
   }
 
   modifyHtml() += m_problem->description().toHtmlEscaped();
-  modifyHtml() += QStringLiteral("<br/>");
-  modifyHtml() += "<i style=\"white-space:pre-wrap\">" + m_problem->explanation().toHtmlEscaped() + "</i>";
+  if ( !m_problem->explanation().isEmpty() ) {
+    modifyHtml() += "<p><i style=\"white-space:pre-wrap\">" + m_problem->explanation().toHtmlEscaped() + "</i></p>";
+  }
 
   modifyHtml() += QStringLiteral("</td>");
   // END: right column
