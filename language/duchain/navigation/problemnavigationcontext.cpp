@@ -42,7 +42,7 @@ using namespace KDevelop;
 namespace {
 
 QString KEY_START_ASSISTANT() { return QStringLiteral("start_assistant"); }
-QString KEY_INVOKE_ACTION(int num) { return QStringLiteral("invoke_action_%1").arg(num); }
+QString KEY_INVOKE_ACTION(int num) { return QString("invoke_action_%1").arg(num); }
 
 QString iconForSeverity(IProblem::Severity severity)
 {
@@ -61,7 +61,7 @@ QString htmlImg(const QString& iconName, KIconLoader::Group group)
 {
   KIconLoader loader;
   const int size = loader.currentSize(group);
-  return QStringLiteral("<img width='%1' height='%1' src='%2'/>")
+  return QString::fromLatin1("<img width='%1' height='%1' src='%2'/>")
     .arg(size)
     .arg(loader.iconPath(iconName, group));
 }
