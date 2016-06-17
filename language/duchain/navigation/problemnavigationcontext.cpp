@@ -89,13 +89,14 @@ QString KDevelop::AssistantNavigationContext::html(bool shorten)
   clear();
   m_shorten = shorten;
 
-  modifyHtml() += i18n("Solutions:") + "<br/>";
+  modifyHtml() += i18n("<p>Solutions:</p>");
 
   int index = 0;
   foreach (auto assistantAction, m_assistant->actions()) {
+    modifyHtml() += "<p>";
     makeLink(i18n("Apply %1", index + 1), KEY_INVOKE_ACTION(index),
              NavigationAction(KEY_INVOKE_ACTION(index)));
-    modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "<br/>";
+    modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "</p>";
     ++index;
   }
 
@@ -195,17 +196,17 @@ QString ProblemNavigationContext::html(bool shorten)
 
   const QVector<IProblem::Ptr> diagnostics = m_problem->diagnostics();
   if (!diagnostics.isEmpty()) {
-    modifyHtml() += QStringLiteral("<br/>");
 
     DUChainReadLocker lock;
     for (auto diagnostic : diagnostics) {
+      modifyHtml() += QStringLiteral("<p>");
       modifyHtml() += labelHighlight(QStringLiteral("%1: ").arg(diagnostic->severityString()));
       modifyHtml() += diagnostic->description();
 
       const DocumentRange range = diagnostic->finalLocation();
       Declaration* declaration = DUChainUtils::itemUnderCursor(range.document.toUrl(), range.start());
       if (declaration) {
-        modifyHtml() += i18n("<br/>See: ");
+        modifyHtml() += i18n("<br>See: ");
         makeLink(declaration->toString(), DeclarationPointer(declaration), NavigationAction::NavigateDeclaration);
         modifyHtml() += i18n(" in ");
         makeLink(QStringLiteral("%1 :%2")
@@ -213,14 +214,14 @@ QString ProblemNavigationContext::html(bool shorten)
                   .arg(declaration->rangeInCurrentRevision().start().line() + 1),
                  DeclarationPointer(declaration), NavigationAction::NavigateDeclaration);
       } else if (range.start().isValid()) {
-        modifyHtml() += i18n("<br/>See: ");
+        modifyHtml() += i18n("<br>See: ");
         const auto url = range.document.toUrl();
         makeLink(QStringLiteral("%1 :%2")
                    .arg(url.fileName())
                    .arg(range.start().line() + 1),
                  url.toDisplayString(QUrl::PreferLocalFile), NavigationAction(url, range.start()));
       }
-      modifyHtml() += QStringLiteral("<br/>");
+      modifyHtml() += QStringLiteral("</p>");
     }
   }
 

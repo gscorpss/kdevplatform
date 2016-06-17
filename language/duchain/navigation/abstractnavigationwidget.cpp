@@ -145,13 +145,13 @@ void AbstractNavigationWidget::update() {
     int scrollPos = m_browser->verticalScrollBar()->value();
 
     // TODO: Only show that the first time, or the first few times this context is shown?
-    html += QStringLiteral("<br/><small>");
+    html += QStringLiteral("<p><small>");
     if (m_context->linkCount() > 0) {
       html += i18n("(Hold 'Alt' to show. Navigate via arrow keys, activate by pressing 'Enter')");
     } else {
       html += i18n("(Hold 'Alt' to show this tooltip)");
     }
-    html += QStringLiteral("</small>");
+    html += QStringLiteral("</small></p>");
 
     m_browser->setHtml( html );
 
