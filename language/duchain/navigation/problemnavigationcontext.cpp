@@ -154,9 +154,6 @@ QString ProblemNavigationContext::name() const
 
 QString ProblemNavigationContext::html(bool shorten)
 {
-  // TODO: Remove me
-  static const bool inlineSolutions = true;
-
   clear();
   m_shorten = shorten;
   auto iconPath = iconForSeverity(m_problem->severity());
@@ -231,32 +228,24 @@ QString ProblemNavigationContext::html(bool shorten)
   }
   auto assistant = m_cachedAssistant;
   if (assistant && !assistant->actions().isEmpty()) {
-    if (inlineSolutions) {
+    KColorScheme scheme(QPalette::Normal, KColorScheme::View);
+    auto bgBrush = scheme.background(KColorScheme::AlternateBackground);
+    modifyHtml() += QStringLiteral("<table width='100%' style='border: 1px solid black; background-color: %1;'>")
+      .arg(bgBrush.color().name());
 
-      KColorScheme scheme(QPalette::Normal, KColorScheme::View);
-      auto bgBrush = scheme.background(KColorScheme::AlternateBackground);
-      modifyHtml() += QStringLiteral("<table width='100%' style='border: 1px solid black; background-color: %1;'>")
-        .arg(bgBrush.color().name());
-
-      modifyHtml() += QStringLiteral("<tr><td>%1</td><td width='100%'>").arg(htmlImg(QStringLiteral("dialog-ok-apply"), KIconLoader::Panel));
-      int index = 0;
-      foreach (auto assistantAction, assistant->actions()) {
-        if (index != 0) {
-          modifyHtml() += "<br/>";
-        }
-        makeLink(i18n("Solution (%1)", index + 1), KEY_INVOKE_ACTION(index),
-                 NavigationAction(KEY_INVOKE_ACTION(index)));
-        modifyHtml() += ": " + assistantAction->description().toHtmlEscaped();
-        ++index;
+    modifyHtml() += QStringLiteral("<tr><td valign='middle'>%1</td><td width='100%'>").arg(htmlImg(QStringLiteral("dialog-ok-apply"), KIconLoader::Panel));
+    int index = 0;
+    foreach (auto assistantAction, assistant->actions()) {
+      if (index != 0) {
+        modifyHtml() += "<br/>";
       }
-      modifyHtml() += "</td></tr>";
-      modifyHtml() += QStringLiteral("</table>");
-    } else {
-      makeLink(i18np("Start Assistant (%1 solution)", "Start Assistant (%1 solutions)",
-               assistant->actions().count()), KEY_START_ASSISTANT(),
-               NavigationAction(KEY_START_ASSISTANT()));
+      makeLink(i18n("Solution (%1)", index + 1), KEY_INVOKE_ACTION(index),
+                NavigationAction(KEY_INVOKE_ACTION(index)));
+      modifyHtml() += ": " + assistantAction->description().toHtmlEscaped();
+      ++index;
     }
-    modifyHtml() += QStringLiteral("<br/>");
+    modifyHtml() += "</td></tr>";
+    modifyHtml() += QStringLiteral("</table>");
   }
 
   return currentHtml();
