@@ -200,16 +200,7 @@ NavigationContextPointer ProblemNavigationContext::executeKeyAction(QString key)
     return {};
   if (key.startsWith(QLatin1String("invoke_action_"))) {
     const auto index = key.replace(QLatin1String("invoke_action_"), QString()).toInt();
-    auto action = assistant->actions().value(index);
-    if (action) {
-      action->execute();
-      if ( topContext() ) {
-        DUChain::self()->updateContextForUrl(topContext()->url(), TopDUContext::ForceUpdate);
-      }
-    } else {
-      qCWarning(LANGUAGE()) << "Action got removed in-between";
-      return {};
-    }
+    executeAction(index);
   }
 
   return {};
@@ -220,7 +211,6 @@ void ProblemNavigationContext::executeAction(int index)
   auto assistant = m_problem->solutionAssistant();
   if (!assistant)
     return;
-
 
   auto action = assistant->actions().value(index);
   if (action) {
