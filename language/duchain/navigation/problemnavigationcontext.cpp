@@ -41,7 +41,6 @@ using namespace KDevelop;
 
 namespace {
 
-QString KEY_START_ASSISTANT() { return QStringLiteral("start_assistant"); }
 QString KEY_INVOKE_ACTION(int num) { return QString("invoke_action_%1").arg(num); }
 
 QString iconForSeverity(IProblem::Severity severity)
@@ -66,63 +65,6 @@ QString htmlImg(const QString& iconName, KIconLoader::Group group)
     .arg(loader.iconPath(iconName, group));
 }
 
-}
-
-
-KDevelop::AssistantNavigationContext::AssistantNavigationContext(const IAssistant::Ptr& assistant)
-  : m_assistant(assistant)
-{
-}
-
-KDevelop::AssistantNavigationContext::~AssistantNavigationContext()
-{
-}
-
-
-QString KDevelop::AssistantNavigationContext::name() const
-{
-  return i18n("Assistant");
-}
-
-QString KDevelop::AssistantNavigationContext::html(bool shorten)
-{
-  clear();
-  m_shorten = shorten;
-
-  modifyHtml() += i18n("<p>Solutions:</p>");
-
-  int index = 0;
-  foreach (auto assistantAction, m_assistant->actions()) {
-    modifyHtml() += "<p>";
-    makeLink(i18n("Apply %1", index + 1), KEY_INVOKE_ACTION(index),
-             NavigationAction(KEY_INVOKE_ACTION(index)));
-    modifyHtml() += ": " + assistantAction->description().toHtmlEscaped() + "</p>";
-    ++index;
-  }
-
-  return currentHtml();
-}
-
-NavigationContextPointer AssistantNavigationContext::executeKeyAction(QString key)
-{
-  if (key.startsWith(QLatin1String("invoke_action_"))) {
-    if (!m_assistant)
-      return {};
-
-    const auto index = key.replace(QLatin1String("invoke_action_"), QString()).toInt();
-    auto action = m_assistant->actions().value(index);
-    if (action) {
-      action->execute();
-      if ( topContext() ) {
-        DUChain::self()->updateContextForUrl(topContext()->url(), TopDUContext::ForceUpdate);
-      }
-    } else {
-      qCWarning(LANGUAGE()) << "Action got removed in-between";
-      return {};
-    }
-  }
-
-  return {};
 }
 
 ProblemNavigationContext::ProblemNavigationContext(const IProblem::Ptr& problem, const Flags flags)
@@ -256,9 +198,6 @@ NavigationContextPointer ProblemNavigationContext::executeKeyAction(QString key)
   auto assistant = m_cachedAssistant;
   if (!assistant)
     return {};
-  if (key == KEY_START_ASSISTANT()) {
-    return NavigationContextPointer(new AssistantNavigationContext(assistant));
-  }
   if (key.startsWith(QLatin1String("invoke_action_"))) {
     const auto index = key.replace(QLatin1String("invoke_action_"), QString()).toInt();
     auto action = assistant->actions().value(index);

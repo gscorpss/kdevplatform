@@ -28,23 +28,6 @@
 
 namespace KDevelop {
 
-/// TODO: Kill me?
-class KDEVPLATFORMLANGUAGE_EXPORT AssistantNavigationContext : public AbstractNavigationContext
-{
-  Q_OBJECT
-  public:
-    explicit AssistantNavigationContext(const IAssistant::Ptr& assistant);
-    ~AssistantNavigationContext();
-
-    virtual QString name() const override;
-    virtual QString html(bool shorten = false) override;
-
-    NavigationContextPointer executeKeyAction(QString key) override;
-
-  private:
-    IAssistant::Ptr m_assistant;
-};
-
 class KDEVPLATFORMLANGUAGE_EXPORT ProblemNavigationContext : public AbstractNavigationContext
 {
   Q_OBJECT
