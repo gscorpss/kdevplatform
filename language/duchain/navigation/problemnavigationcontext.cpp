@@ -170,10 +170,7 @@ QString ProblemNavigationContext::html(bool shorten)
   }
   auto assistant = m_cachedAssistant;
   if (assistant && !assistant->actions().isEmpty()) {
-    KColorScheme scheme(QPalette::Normal, KColorScheme::View);
-    auto bgBrush = scheme.background(KColorScheme::AlternateBackground);
-    modifyHtml() += QStringLiteral("<table width='100%' style='border: 1px solid black; background-color: %1;'>")
-      .arg(bgBrush.color().name());
+    modifyHtml() += QString::fromLatin1("<table width='100%' style='border: 1px solid black; background-color: %1;'>").arg("#b3d4ff");
 
     modifyHtml() += QStringLiteral("<tr><td valign='middle'>%1</td><td width='100%'>").arg(htmlImg(QStringLiteral("dialog-ok-apply"), KIconLoader::Panel));
     int index = 0;
