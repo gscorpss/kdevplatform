@@ -100,7 +100,7 @@ struct RenameAssistant::Private
     bool m_isUseful;
     bool m_renameFile;
     KTextEditor::Cursor m_lastChangedLocation;
-    KTextEditor::Document* m_lastChangedDocument = nullptr;
+    QPointer<KTextEditor::Document> m_lastChangedDocument = nullptr;
 };
 
 RenameAssistant::RenameAssistant(ILanguageSupport* supportedLanguage)
