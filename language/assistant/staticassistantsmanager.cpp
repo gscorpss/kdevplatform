@@ -131,8 +131,6 @@ void StaticAssistantsManager::notifyAssistants(const IndexedString& url, const K
 
 QVector<KDevelop::Problem::Ptr> KDevelop::StaticAssistantsManager::problemsForContext(const KDevelop::ReferencedTopDUContext& top)
 {
-    qDebug() << "called";
-
     View* view = ICore::self()->documentController()->activeTextDocumentView();
     if (!view || !top || IndexedString(view->document()->url()) != top->url()) {
         return {};
