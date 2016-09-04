@@ -101,7 +101,7 @@ QString LaunchConfiguration::configGroupName() const
     return baseGroup.name();
 }
 
-QString LaunchConfiguration::launcherForMode(const QString& mode) const
+const QString& LaunchConfiguration::launcherForMode(const QString& mode) const
 {
     QStringList modes = baseGroup.readEntry( "Configured Launch Modes", QStringList() );
     int idx = modes.indexOf( mode );
@@ -128,8 +128,8 @@ QString LaunchConfiguration::launcherForMode(const QString& mode) const
             return l->id();
         }
     }
-
-    return QString();
+    static const QString empty;
+    return empty;
 }
 
 void LaunchConfiguration::setLauncherForMode(const QString& mode, const QString& id)

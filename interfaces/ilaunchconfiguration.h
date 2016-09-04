@@ -71,6 +71,8 @@ public:
      * @returns the project in which the configuration is stored or 0 if the configuration is stored globally
      */
     virtual IProject* project() const = 0;
+
+    virtual const QString& launcherForMode( const QString& mode ) const = 0;
 };
 
 }

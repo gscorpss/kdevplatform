@@ -460,9 +460,8 @@ void LaunchConfigurationDialog::createConfiguration()
     }
 }
 
-void LaunchConfigurationDialog::addConfiguration(ILaunchConfiguration* _launch)
+void LaunchConfigurationDialog::addConfiguration(ILaunchConfiguration* launch)
 {
-    LaunchConfiguration* launch = dynamic_cast<LaunchConfiguration*>(_launch);
     Q_ASSERT(launch);
     int row = launch->project() ? model->findItemForProject(launch->project())->row : 0;
     QModelIndex idx  = model->index(row, 0);

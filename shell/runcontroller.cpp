@@ -379,21 +379,12 @@ KJob* RunController::execute(const QString& runMode, ILaunchConfiguration* launc
         kDebug() << "execute called without launch config!";
         return nullptr;
     }
-    LaunchConfiguration *run = dynamic_cast<LaunchConfiguration*>(launch);
-    //TODO: Port to launch framework, probably needs to be part of the launcher
-    //if(!run.dependencies().isEmpty())
-    //    ICore::self()->documentController()->saveAllDocuments(IDocument::Silent);
-
-    //foreach(KJob* job, run.dependencies())
-    //{
-    //    jobs.append(job);
-    //}
 
     kDebug() << "mode:" << runMode;
-    QString launcherId = run->launcherForMode( runMode );
+    const QString& launcherId = launch->launcherForMode( runMode );
     kDebug() << "launcher id:" << launcherId;
 
-    ILauncher* launcher = run->type()->launcherForId( launcherId );
+    ILauncher* launcher = launch->type()->launcherForId( launcherId );
 
     if( !launcher ) {
         KMessageBox::error(
@@ -403,7 +394,7 @@ KJob* RunController::execute(const QString& runMode, ILaunchConfiguration* launc
         return 0;
     }
 
-    KJob* launchJob = launcher->start(runMode, run);
+    KJob* launchJob = launcher->start(runMode, launch);
     registerJob(launchJob);
     return launchJob;
 }

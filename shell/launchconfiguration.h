@@ -82,7 +82,7 @@ public:
     
     QString configGroupName() const;
     
-    QString launcherForMode( const QString& mode ) const;
+    virtual const QString& launcherForMode(const QString& mode) const;
     void setLauncherForMode( const QString& mode, const QString& id );
     
     KConfigGroup config();
