@@ -43,24 +43,24 @@ public:
      * Provide an icon for this launch mode for the GUI.
      * @returns an icon for menus/toolbars
      */
-    virtual KIcon icon() const = 0;
+    virtual const KIcon& icon() const = 0;
     
     /**
      * Provide a unique ID for this launch mode.
      * This is used for example from ILauncher::supportedModes()
      * @returns a unique ID for this launchmode
      */
-    virtual QString id() const = 0;
+    virtual const QString& id() const = 0;
     
     /**
      * A translated name for this launch mode.
      * For example:
      * \code
-     * QString ExecuteMode::name() { return i18n("Execute"); }
+     * QString ExecuteMode::name() { static QString n(i18n("Execute")) return n; }
      * \endcode
      * @returns a human readable name
      */
-    virtual QString name() const = 0;
+    virtual const QString& name() const = 0;
 };
 
 }

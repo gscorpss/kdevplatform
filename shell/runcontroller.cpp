@@ -77,27 +77,27 @@ class DebugMode : public ILaunchMode
 {
 public:
     DebugMode() {}
-    virtual KIcon icon() const { return KIcon("tools-report-bug"); }
-    virtual QString id() const { return "debug"; }
-    virtual QString name() const { return i18n("Debug"); }
+    virtual const KIcon& icon() const { static KIcon i("tools-report-bug"); return i; }
+    virtual const QString& id() const { static QString s("debug"); return s; }
+    virtual const QString& name() const { static QString s(i18n("Debug")); return s; }
 };
 
 class ProfileMode : public ILaunchMode
 {
 public:
     ProfileMode() {}
-    virtual KIcon icon() const { return KIcon("office-chart-area"); }
-    virtual QString id() const { return "profile"; }
-    virtual QString name() const { return i18n("Profile"); }
+    virtual const KIcon& icon() const { static KIcon i("office-chart-area"); return i; }
+    virtual const QString& id() const { static QString s("profile"); return s; }
+    virtual const QString& name() const { static QString s(i18n("Profile")); return s; }
 };
 
 class ExecuteMode : public ILaunchMode
 {
 public:
     ExecuteMode() {}
-    virtual KIcon icon() const { return KIcon("system-run"); }
-    virtual QString id() const { return "execute"; }
-    virtual QString name() const { return i18n("Execute"); }
+    virtual const KIcon& icon() const { static KIcon i("system-run"); return i; }
+    virtual const QString& id() const { static QString s("execute"); return s; }
+    virtual const QString& name() const { static QString s(i18n("Execute")); return s; }
 };
 
 class RunController::RunControllerPrivate
