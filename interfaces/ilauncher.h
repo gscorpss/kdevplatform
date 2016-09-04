@@ -49,25 +49,25 @@ public:
      * Returns a unique identifier for the launcher,
      * used for example for ILaunchConfigurationType::launcherForId().
      */
-    virtual QString id() = 0;
+    virtual const QString& id() const = 0;
 
     /**
         * a user visible name for the launcher
         * @returns a translatable string as description for the launcher
         */
-    virtual QString name() const = 0;
+    virtual const QString& name() const = 0;
     
     /**
         * provides a short description about this launcher
         * @returns a description of what the launcher can do
         */
-    virtual QString description() const = 0;
+    virtual const QString& description() const = 0;
     
     /**
         * returns the ids of the supported launch modes
         * @returns a list of id's for ILaunchMode's that are supported
         */
-    virtual QStringList supportedModes() const = 0;
+    virtual const QStringList& supportedModes() const = 0;
     
     /**
         * provide a list of config pages for this launcher

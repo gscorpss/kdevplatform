@@ -293,26 +293,29 @@ QList< KDevelop::LaunchConfigurationPageFactory* > NativeAppLauncher::configPage
     return QList<KDevelop::LaunchConfigurationPageFactory*>();
 }
 
-QString NativeAppLauncher::description() const
+const QString& NativeAppLauncher::description() const
 {
-    return "Executes Native Applications";
+    static QString descr("Executes Native Applications");
+    return descr;
 }
 
-QString NativeAppLauncher::id() 
+const QString& NativeAppLauncher::id() const
 {
-    return "nativeAppLauncher";
+    static QString idstr("nativeAppLauncher");
+    return idstr;
 }
 
-QString NativeAppLauncher::name() const 
+const QString& NativeAppLauncher::name() const
 {
-    return i18n("Native Application");
+    static QString namestr(i18n("Native Application"));
+    return namestr;
 }
 
 NativeAppLauncher::NativeAppLauncher()
 {
 }
 
-KJob* NativeAppLauncher::start(const QString& launchMode, KDevelop::ILaunchConfiguration* cfg)
+KDevelop::ExecuteCompositeJob* NativeAppLauncher::start(const QString& launchMode, KDevelop::ILaunchConfiguration* cfg)
 {
     Q_ASSERT(cfg);
     if( !cfg )
@@ -337,9 +340,10 @@ KJob* NativeAppLauncher::start(const QString& launchMode, KDevelop::ILaunchConfi
     return 0;
 }
 
-QStringList NativeAppLauncher::supportedModes() const
+const QStringList& NativeAppLauncher::supportedModes() const
 {
-    return QStringList() << "execute";
+    static QStringList modes([]() { return QStringList() << "execute"; }());
+    return modes;
 }
 
 KDevelop::LaunchConfigurationPage* NativeAppPageFactory::createWidget(QWidget* parent)

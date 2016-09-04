@@ -24,7 +24,7 @@
 #include <interfaces/launchconfigurationpage.h>
 #include <interfaces/ilauncher.h>
 #include <interfaces/ilaunchmode.h>
-
+#include <util/executecompositejob.h>
 #include "ui_nativeappconfig.h"
 
 //TODO: Split the page into two, one concerning executable/arguments/behaviour the other for dependencies
@@ -54,11 +54,11 @@ class NativeAppLauncher : public KDevelop::ILauncher
 public:
     NativeAppLauncher();
     virtual QList< KDevelop::LaunchConfigurationPageFactory* > configPages() const;
-    virtual QString description() const;
-    virtual QString id();
-    virtual QString name() const;
-    virtual KJob* start(const QString& launchMode, KDevelop::ILaunchConfiguration* cfg);
-    virtual QStringList supportedModes() const;
+    const QString& description() const override;
+    const QString& id() const override;
+    const QString& name() const override;
+    KDevelop::ExecuteCompositeJob* start(const QString& launchMode, KDevelop::ILaunchConfiguration* cfg) override;
+    const QStringList& supportedModes() const override;
 };
 
 class NativeAppPageFactory : public KDevelop::LaunchConfigurationPageFactory

@@ -140,19 +140,22 @@ QList< KDevelop::LaunchConfigurationPageFactory* > ScriptAppLauncher::configPage
     return QList<KDevelop::LaunchConfigurationPageFactory*>();
 }
 
-QString ScriptAppLauncher::description() const
+const QString& ScriptAppLauncher::description() const
 {
-    return i18n("Executes Script Applications");
+    static QString descr("Executes Script Applications");
+    return descr;
 }
 
-QString ScriptAppLauncher::id()
+const QString& ScriptAppLauncher::id() const
 {
-    return "scriptAppLauncher";
+    static QString idstr("scriptAppLauncher");
+    return idstr;
 }
 
-QString ScriptAppLauncher::name() const
+const QString& ScriptAppLauncher::name() const
 {
-    return i18n("Script Application");
+    static QString namestr(i18n("Script Application"));
+    return namestr;
 }
 
 ScriptAppLauncher::ScriptAppLauncher(ExecuteScriptPlugin* plugin)
@@ -160,7 +163,7 @@ ScriptAppLauncher::ScriptAppLauncher(ExecuteScriptPlugin* plugin)
 {
 }
 
-KJob* ScriptAppLauncher::start(const QString& launchMode, KDevelop::ILaunchConfiguration* cfg)
+ScriptAppJob* ScriptAppLauncher::start(const QString& launchMode, KDevelop::ILaunchConfiguration* cfg)
 {
     Q_ASSERT(cfg);
     if( !cfg )
@@ -175,9 +178,10 @@ KJob* ScriptAppLauncher::start(const QString& launchMode, KDevelop::ILaunchConfi
     return 0;
 }
 
-QStringList ScriptAppLauncher::supportedModes() const
+const QStringList& ScriptAppLauncher::supportedModes() const
 {
-    return QStringList() << "execute";
+    static QStringList modes([]() { return QStringList() << "execute"; }());
+    return modes;
 }
 
 KDevelop::LaunchConfigurationPage* ScriptAppPageFactory::createWidget(QWidget* parent)

@@ -377,7 +377,7 @@ KJob* RunController::execute(const QString& runMode, ILaunchConfiguration* launc
     if( !launch )
     {
         kDebug() << "execute called without launch config!";
-        return 0;
+        return nullptr;
     }
     LaunchConfiguration *run = dynamic_cast<LaunchConfiguration*>(launch);
     //TODO: Port to launch framework, probably needs to be part of the launcher
