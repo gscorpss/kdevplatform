@@ -276,7 +276,7 @@ class DUChainPrivate
     private:
       void run() {
         while(1) {
-          for(uint s = 0; s < cleanupEverySeconds; ++s) {
+          for(uint s = 0; s < (cleanupEverySeconds); ++s) {
             if(m_stopRunning)
               break;
             QMutexLocker lock(&m_waitMutex);

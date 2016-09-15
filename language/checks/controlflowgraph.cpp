@@ -91,7 +91,7 @@ QList< ControlFlowNode* > ControlFlowGraph::rootNodes() const
     return d->m_funcNodes.values()+d->m_nodes;
 }
 
-QVector< ControlFlowNode* > ControlFlowGraph::deadNodes() const
+const QVector<ControlFlowNode*>& ControlFlowGraph::deadNodes() const
 {
     return d->m_deadNodes;
 }
@@ -100,6 +100,17 @@ QList<Declaration*> ControlFlowGraph::declarations() const
 {
     return d->m_funcNodes.keys();
 }
+
+Declaration* ControlFlowGraph::declarationForNode(const ControlFlowNode* node) const
+{
+    for(QMap <Declaration*, ControlFlowNode* >::const_iterator i = d->m_funcNodes.begin(); i != d->m_funcNodes.end() ; ++i)
+    {
+        if(nodeForDeclaration(i.key())==node)
+            return i.key();
+    }
+    return nullptr;
+}
+
 
 ControlFlowNode* ControlFlowGraph::nodeForDeclaration(Declaration* decl) const
 {

@@ -60,13 +60,16 @@ class KDEVPLATFORMLANGUAGE_EXPORT ControlFlowGraph
     QList<KDevelop::Declaration*> declarations() const;
 
     /** @returns  the node attached to the declaration @p d*/
-    ControlFlowNode* nodeForDeclaration(KDevelop::Declaration* d) const;
+    ControlFlowNode* nodeForDeclaration(KDevelop::Declaration* decl) const;
 
     /** @returns all root nodes in the graph */
     QList<ControlFlowNode*> rootNodes() const;
 
     /** @returns all dead nodes in the graph */
-    QVector<ControlFlowNode*> deadNodes() const;
+    const QVector<ControlFlowNode*>& deadNodes() const;
+
+    Declaration* declarationForNode(const ControlFlowNode* node) const;
+
   private:
     ControlFlowGraph(const ControlFlowGraph&);
     struct Private;
