@@ -38,127 +38,12 @@ Boston, MA 02110-1301, USA.
 #include <util/fileutils.h>
 #include <language/duchain/repositories/itemrepository.h>
 
-namespace KDevelop
+namespace
 {
 
-const QString Session::cfgSessionNameEntry = "SessionName";
-const QString Session::cfgSessionDescriptionEntry = "SessionPrettyContents";
-const QString Session::cfgSessionProjectsEntry = "Open Projects";
-const QString Session::cfgSessionOptionsGroup = "General Options";
+using namespace KDevelop;
 
-class SessionPrivate
-{
-public:
-    SessionInfo info;
-    Session* q;
-    bool isTemporary;
-
-    KUrl pluginArea( const IPlugin* plugin )
-    {
-        QString name = Core::self()->pluginController()->pluginInfo( plugin ).pluginName();
-        KUrl url( info.path );
-        url.addPath( name );
-        if( !QFile::exists( url.toLocalFile() ) ) {
-            QDir( info.path ).mkdir( name );
-        }
-        return url;
-    }
-
-    SessionPrivate( Session* session, const QString& id )
-        : info( Session::parse( id, true ) )
-        , q( session )
-        , isTemporary( false )
-    {
-    }
-
-    void updateDescription()
-    {
-        buildDescription( info );
-        emit q->sessionUpdated( q );
-    }
-
-    static QString generatePrettyContents( const SessionInfo& info );
-    static QString generateDescription( const SessionInfo& info );
-    static void buildDescription( SessionInfo& info );
-};
-
-Session::Session( const QString& id, QObject* parent )
-        : ISession(parent)
-        , d( new SessionPrivate( this, id ) )
-{
-}
-
-Session::~Session()
-{
-    delete d;
-}
-
-QString Session::name() const
-{
-    return d->info.name;
-}
-
-KUrl::List Session::containedProjects() const
-{
-    return d->info.projects;
-}
-
-QString Session::description() const
-{
-    return d->info.description;
-}
-
-KUrl Session::pluginDataArea( const IPlugin* p )
-{
-    return d->pluginArea( p );
-}
-
-KSharedConfig::Ptr Session::config()
-{
-    return d->info.config;
-}
-
-QUuid Session::id() const
-{
-    return d->info.uuid;
-}
-
-void Session::setName( const QString& newname )
-{
-    d->info.name = newname;
-
-    d->info.config->group( QString() ).writeEntry( cfgSessionNameEntry, newname );
-    d->info.config->sync();
-
-    d->updateDescription();
-}
-
-void Session::setContainedProjects( const KUrl::List& projects )
-{
-    d->info.projects = projects;
-
-    d->info.config->group( cfgSessionOptionsGroup ).writeEntry( cfgSessionProjectsEntry, projects.toStringList() );
-    d->info.config->sync();
-
-    d->updateDescription();
-}
-
-void Session::setTemporary(bool temp)
-{
-    d->isTemporary = temp;
-}
-
-bool Session::isTemporary() const
-{
-    return d->isTemporary;
-}
-
-QString Session::path() const
-{
-    return d->info.path;
-}
-
-QString SessionPrivate::generatePrettyContents( const SessionInfo& info )
+QString generatePrettyContents( const SessionInfo& info )
 {
     if( info.projects.isEmpty() )
         return QString();
@@ -188,7 +73,7 @@ QString SessionPrivate::generatePrettyContents( const SessionInfo& info )
     }
 }
 
-QString SessionPrivate::generateDescription( const SessionInfo& info )
+QString generateDescription( const SessionInfo& info )
 {
     QString prettyContentsFormatted = generatePrettyContents( info );
     QString description;
@@ -202,13 +87,67 @@ QString SessionPrivate::generateDescription( const SessionInfo& info )
     return description;
 }
 
-void SessionPrivate::buildDescription( SessionInfo& info )
+void buildDescription( SessionInfo& info )
 {
-    QString description = generateDescription( info );
-
-    info.description = description;
-    info.config->group( QString() ).writeEntry( Session::cfgSessionDescriptionEntry, description );
+    info.description = generateDescription( info );;
+    info.config->group( QString() ).writeEntry( Session::cfgSessionDescriptionEntry, info.description );
     info.config->sync();
+}
+}
+
+namespace KDevelop
+{
+
+const QString Session::cfgSessionNameEntry = "SessionName";
+const QString Session::cfgSessionDescriptionEntry = "SessionPrettyContents";
+const QString Session::cfgSessionProjectsEntry = "Open Projects";
+const QString Session::cfgSessionOptionsGroup = "General Options";
+
+Session::Session( const QString& id, QObject* parent )
+        : ISession(parent)
+        , info( Session::parse( id, true ) )
+{
+}
+
+Session::~Session()
+{
+}
+
+void Session::updateDescription()
+{
+    buildDescription( info );
+    emit sessionUpdated( this );
+}
+
+KUrl Session::pluginDataArea( const IPlugin* p )
+{
+    QString name = Core::self()->pluginController()->pluginInfo( p ).pluginName();
+    KUrl url( info.path );
+    url.addPath( name );
+    if( !QFile::exists( url.toLocalFile() ) ) {
+        QDir( info.path ).mkdir( name );
+    }
+    return url;
+}
+
+void Session::setName( const QString& newname )
+{
+    info.name = newname;
+
+    info.config->group( QString() ).writeEntry( cfgSessionNameEntry, newname );
+    info.config->sync();
+
+    updateDescription();
+}
+
+void Session::setContainedProjects( const KUrl::List& projects )
+{
+    info.projects = projects;
+
+    info.config->group( cfgSessionOptionsGroup ).writeEntry( cfgSessionProjectsEntry, projects.toStringList() );
+    info.config->sync();
+
+    updateDescription();
 }
 
 SessionInfo Session::parse( const QString& id, bool mkdir )
@@ -235,7 +174,7 @@ SessionInfo Session::parse( const QString& id, bool mkdir )
 
     ret.name = cfgRootGroup.readEntry( cfgSessionNameEntry, QString() );
     ret.projects = cfgOptionsGroup.readEntry( cfgSessionProjectsEntry, QStringList() );
-    SessionPrivate::buildDescription( ret );
+    buildDescription( ret );
 
     return ret;
 }

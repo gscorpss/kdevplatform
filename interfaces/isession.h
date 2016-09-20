@@ -50,9 +50,9 @@ public:
      * 
      * The string is empty if the session is empty and has no name.
      */
-    virtual QString description() const = 0;
-    virtual QString name() const = 0;
-    virtual KUrl::List containedProjects() const = 0;
+    virtual const QString& description() const = 0;
+    virtual const QString& name() const = 0;
+    virtual const KUrl::List& containedProjects() const = 0;
     virtual void setContainedProjects( const KUrl::List& projects ) = 0;
     virtual KUrl pluginDataArea( const IPlugin* ) = 0;
     virtual KSharedConfig::Ptr config() = 0;

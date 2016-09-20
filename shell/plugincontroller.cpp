@@ -326,8 +326,7 @@ void PluginController::initialize()
     KConfigGroup grp = Core::self()->activeSession()->config()->group( KEY_Plugins );
     QMap<QString, QString> entries = grp.entryMap();
 
-    QMap<QString, QString>::Iterator it;
-    for ( it = entries.begin(); it != entries.end(); ++it )
+    for (QMap<QString, QString>::Iterator it = entries.begin(); it != entries.end(); ++it )
     {
         QString key = it.key();
         if ( key.endsWith( QLatin1String( "Enabled" ) ) )

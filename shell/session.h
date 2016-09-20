@@ -53,22 +53,22 @@ public:
     virtual ~Session();
 
     virtual KUrl pluginDataArea( const IPlugin* );
-    virtual KSharedConfig::Ptr config();
+    virtual KSharedConfig::Ptr config() { return info.config; }
 
-    virtual KUrl::List containedProjects() const;
+    virtual const KUrl::List& containedProjects() const { return info.projects; }
     virtual void setContainedProjects( const KUrl::List& projects );
 
-    virtual QString name() const;
+    virtual const QString& name() const { return info.name; }
     void setName( const QString& );
 
-    virtual QUuid id() const;
+    virtual QUuid id() const { return info.uuid; }
 
-    virtual QString description() const;
+    virtual const QString& description() const { return info.description; }
 
-    virtual bool isTemporary() const;
-    virtual void setTemporary(bool temp);
+    virtual bool isTemporary() const { return isTemporaryFlag; }
+    virtual void setTemporary(bool temp) { isTemporaryFlag = temp; }
 
-    QString path() const;
+    const QString& path() const { return info.path; }
 
     /**
      * Generates a @ref SessionInfo by a session @p id.
@@ -77,8 +77,10 @@ public:
     static SessionInfo parse( const QString& id, bool mkdir = false );
 
 private:
-    class SessionPrivate* const d;
-    friend class SessionPrivate;
+    void updateDescription();
+
+    SessionInfo info;
+    bool isTemporaryFlag = false;
 };
 
 }
