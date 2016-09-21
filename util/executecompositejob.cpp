@@ -23,16 +23,10 @@ Boston, MA 02110-1301, USA.
 
 namespace KDevelop
 {
-class ExecuteCompositeJobPrivate
-{
-public:
-    bool m_killing;
-};
 
 ExecuteCompositeJob::ExecuteCompositeJob(QObject* parent, const QList<KJob*>& jobs)
-: KCompositeJob(parent), d(new ExecuteCompositeJobPrivate)
+: KCompositeJob(parent), m_killing(false)
 {
-    d->m_killing = false;
     setCapabilities(Killable);
 
     qDebug() << "execute composite" << jobs;
@@ -40,11 +34,6 @@ ExecuteCompositeJob::ExecuteCompositeJob(QObject* parent, const QList<KJob*>& jo
         addSubjob(job);
         if (objectName().isEmpty()) setObjectName(job->objectName());
     }
-}
-
-ExecuteCompositeJob::~ExecuteCompositeJob()
-{
-    delete d;
 }
 
 void ExecuteCompositeJob::start()
@@ -60,7 +49,7 @@ void ExecuteCompositeJob::slotResult(KJob* job)
     kDebug() << "finished: "<< job << job->error() << error();
     KCompositeJob::slotResult(job);
 
-    if(hasSubjobs() && !error() && !d->m_killing)
+    if(hasSubjobs() && !error() && !m_killing)
     {
         kDebug() << "remaining: " << subjobs().count() << subjobs();
         KJob* nextJob=subjobs().first();
@@ -74,7 +63,7 @@ void ExecuteCompositeJob::slotResult(KJob* job)
 
 bool ExecuteCompositeJob::doKill()
 {
-    d->m_killing = true;
+    m_killing = true;
     while(hasSubjobs()) {
         KJob* j = subjobs().first();
         if( !j ) {

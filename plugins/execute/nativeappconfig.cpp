@@ -322,22 +322,21 @@ KDevelop::ExecuteCompositeJob* NativeAppLauncher::start(const QString& launchMod
     {
         return 0;
     }
-    if( launchMode == "execute" )
+    if( launchMode != "execute" )
     {
-        IExecutePlugin* iface = KDevelop::ICore::self()->pluginController()->pluginForExtension("org.kdevelop.IExecutePlugin", "kdevexecute")->extension<IExecutePlugin>();
-        Q_ASSERT(iface);
-        KJob* depjob = iface->dependecyJob( cfg );
-        QList<KJob*> l;
-        if( depjob )
-        {
-            l << depjob;
-        }
-        l << new NativeAppJob( KDevelop::ICore::self()->runController(), cfg );
-        return new KDevelop::ExecuteCompositeJob( KDevelop::ICore::self()->runController(), l );
-        
+        kWarning() << "Unknown launch mode " << launchMode << "for config:" << cfg->name();
+        return 0;
     }
-    kWarning() << "Unknown launch mode " << launchMode << "for config:" << cfg->name();
-    return 0;
+    IExecutePlugin* iface = KDevelop::ICore::self()->pluginController()->pluginForExtension("org.kdevelop.IExecutePlugin", "kdevexecute")->extension<IExecutePlugin>();
+    Q_ASSERT(iface);
+    KJob* depjob = iface->dependecyJob( cfg );
+    QList<KJob*> l;
+    if( depjob )
+    {
+        l << depjob;
+    }
+    l << new NativeAppJob( KDevelop::ICore::self()->runController(), cfg );
+    return new KDevelop::ExecuteCompositeJob( KDevelop::ICore::self()->runController(), l );
 }
 
 const QStringList& NativeAppLauncher::supportedModes() const

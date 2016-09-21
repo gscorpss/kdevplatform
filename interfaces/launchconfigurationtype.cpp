@@ -24,46 +24,28 @@
 namespace KDevelop
 {
 
-class LaunchConfigurationTypePrivate
-{
-public:
-    QList<ILauncher*> starters;
-};
-
-LaunchConfigurationType::LaunchConfigurationType()
-    : d( new LaunchConfigurationTypePrivate )
-{
-}
-
-LaunchConfigurationType::~LaunchConfigurationType()
-{
-    delete d;
-}
-
-
 void LaunchConfigurationType::addLauncher( ILauncher* starter )
 {
-    if( !d->starters.contains( starter ) )
+    if( !starters.contains( starter ) )
     {
-        d->starters.append( starter );
+        starters.append( starter );
     }
 }
 void LaunchConfigurationType::removeLauncher( ILauncher* starter )
 {
-    d->starters.removeAll( starter );
+    starters.removeAll( starter );
 }
 
 QList<ILauncher*> LaunchConfigurationType::launchers() const
 {
-    return d->starters;
+    return starters;
 }
 
 ILauncher* LaunchConfigurationType::launcherForId( const QString& id )
 {
-    foreach( ILauncher* l, d->starters ) {
-        if( l->id() == id ) {
+    for( ILauncher* l : starters ) {
+        if( l->id() == id )
            return l;
-        }
     }
     return 0;
 }

@@ -125,8 +125,6 @@ QVariant Breakpoint::data(int column, int role) const
     {
         if (role == Qt::CheckStateRole)
             return m_enabled ? Qt::Checked : Qt::Unchecked;
-        else if (role == Qt::DisplayRole)
-            return QVariant();
         else
             return QVariant();
     }

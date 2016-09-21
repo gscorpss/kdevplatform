@@ -32,7 +32,7 @@ class KDEVPLATFORMUTIL_EXPORT ExecuteCompositeJob : public KCompositeJob
 Q_OBJECT
 public:
     ExecuteCompositeJob(QObject* parent, const QList<KJob*>& jobs);
-    ~ExecuteCompositeJob();
+
     virtual void start();
 
     const QList<KJob*> &subjobs() const;
@@ -41,7 +41,7 @@ public Q_SLOTS:
 protected:
     virtual bool doKill();
 private:
-    class ExecuteCompositeJobPrivate* const d;
+    bool m_killing;
 };
 
 }

@@ -49,8 +49,7 @@ class KDEVPLATFORMINTERFACES_EXPORT LaunchConfigurationType : public QObject
 {
 Q_OBJECT
 public:
-    LaunchConfigurationType();
-    virtual ~LaunchConfigurationType();
+    virtual ~LaunchConfigurationType() {}
 
     /**
      * Provide a unique identifier for the type
@@ -143,7 +142,7 @@ signals:
     void signalAddLaunchConfiguration(KDevelop::ILaunchConfiguration* launch);
     
 private:
-    class LaunchConfigurationTypePrivate* const d;
+    QList<ILauncher*> starters;
 };
 
 }
