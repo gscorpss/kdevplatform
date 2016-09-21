@@ -365,18 +365,19 @@ NativeAppConfigType::~NativeAppConfigType()
     factoryList.clear();
 }
 
-QString NativeAppConfigType::name() const
+const QString& NativeAppConfigType::name() const
 {
-    return i18n("Compiled Binary");
+    static QString s(i18n("Compiled Binary"));
+    return s;
 }
 
 
-QList<KDevelop::LaunchConfigurationPageFactory*> NativeAppConfigType::configPages() const 
+const QList< KDevelop::LaunchConfigurationPageFactory* >& NativeAppConfigType::configPages() const
 {
     return factoryList;
 }
 
-QString NativeAppConfigType::id() const 
+const QString& NativeAppConfigType::id() const 
 {
     return ExecutePlugin::_nativeAppConfigTypeId;
 }

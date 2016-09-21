@@ -80,9 +80,9 @@ public:
     NativeAppConfigType();
     virtual ~NativeAppConfigType();
 
-    QString id() const;
-    QString name() const;
-    QList<KDevelop::LaunchConfigurationPageFactory*> configPages() const;  
+    const QString& id() const;
+    const QString& name() const;
+    const QList<KDevelop::LaunchConfigurationPageFactory*>& configPages() const;
     KIcon icon() const;
     bool canLaunch( KDevelop::ProjectBaseItem* item ) const;
     bool canLaunch( const KUrl& file ) const;

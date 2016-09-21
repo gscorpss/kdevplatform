@@ -204,18 +204,19 @@ ScriptAppConfigType::~ScriptAppConfigType()
     factoryList.clear();
 }
 
-QString ScriptAppConfigType::name() const
+const QString& ScriptAppConfigType::name() const
 {
-    return i18n("Script Application");
+    static QString s(i18n("Script Application"));
+    return s;
 }
 
 
-QList<KDevelop::LaunchConfigurationPageFactory*> ScriptAppConfigType::configPages() const
+const QList< KDevelop::LaunchConfigurationPageFactory* >& ScriptAppConfigType::configPages() const
 {
     return factoryList;
 }
 
-QString ScriptAppConfigType::id() const
+const QString& ScriptAppConfigType::id() const
 {
     return ExecuteScriptPlugin::_scriptAppConfigTypeId;
 }

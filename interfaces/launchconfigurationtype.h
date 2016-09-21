@@ -57,13 +57,13 @@ public:
      * configurations for the pages of this config type
      * @returns a unique identifier for this launch configuration type
      */
-    virtual QString id() const = 0;
+    virtual const QString& id() const = 0;
 
     /**
      * Provide a user visible name for the type
      * @returns a translatable string for the type
      */
-    virtual QString name() const = 0;
+    virtual const QString& name() const = 0;
 
     /**
      * Add @p starter to this configuration type
@@ -81,7 +81,7 @@ public:
      * Access all launchers that are usable with this type
      * @returns a list of launchers that can be used with configurations of this type
      */
-    QList<ILauncher*> launchers() const;
+    const QList<ILauncher*>& launchers() const;
 
     /**
      * Convenience method to access a launcher given its @p id
@@ -94,7 +94,7 @@ public:
      * Provide a list of widgets to configure a launch configuration for this type
      * @returns a list of factories to create config pages from.
      */
-    virtual QList<LaunchConfigurationPageFactory*> configPages() const = 0;
+    virtual const QList<LaunchConfigurationPageFactory*>& configPages() const = 0;
 
     /**
      * Provide an icon for this launch configuration type

@@ -27,23 +27,22 @@ namespace KDevelop
 void LaunchConfigurationType::addLauncher( ILauncher* starter )
 {
     if( !starters.contains( starter ) )
-    {
         starters.append( starter );
-    }
 }
 void LaunchConfigurationType::removeLauncher( ILauncher* starter )
 {
     starters.removeAll( starter );
 }
 
-QList<ILauncher*> LaunchConfigurationType::launchers() const
+const QList< ILauncher* >& LaunchConfigurationType::launchers() const
 {
     return starters;
 }
 
 ILauncher* LaunchConfigurationType::launcherForId( const QString& id )
 {
-    for( ILauncher* l : starters ) {
+    for( ILauncher* l : starters )
+    {
         if( l->id() == id )
            return l;
     }
