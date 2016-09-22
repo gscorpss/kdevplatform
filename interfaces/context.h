@@ -90,6 +90,7 @@ return ext;
 class KDEVPLATFORMINTERFACES_EXPORT Context
 {
 public:
+
     /**Pre-defined context types. More may be added so it is possible to add custom
         contexts. <strong>We reserve enum values until 1000 (yeah, it is one thousand )
         for kdevplatform official context types.</strong>*/
@@ -103,20 +104,23 @@ public:
     };
 
     /**Implement this in the context so we can provide rtti.*/
-    virtual int type() const = 0;
+    Type type() const { return m_type; }
 
     /**@return The type of this Context, so clients can discriminate
         between different file contexts.*/
-    bool hasType( int type ) const;
+    bool hasType( int type ) const { return type == m_type; }
 
 protected:
     /**Constructor.*/
-    Context();
+    Context(Type type) : m_type(type) {}
 
     /**Destructor.*/
-    virtual ~Context();
+    virtual ~Context() {}
 private:
-    class ContextPrivate* const d;
+    Type m_type;
+
+    Context( const Context& ) = delete;
+    Context &operator=( const Context& ) = delete;
 };
 
 /**
@@ -129,19 +133,11 @@ public:
         @param urls The list of selected url.*/
     FileContext( const KUrl::List &urls );
 
-    /**Destructor.*/
-    virtual ~FileContext();
-
-    virtual int type() const;
-
     /**@return A reference to the selected URLs.*/
-    KUrl::List urls() const;
+    const KUrl::List& urls() const { return m_urls; }
 
 private:
-    class FileContextPrivate* const d;
-
-    FileContext( const FileContext & );
-    FileContext &operator=( const FileContext & );
+    KUrl::List m_urls;
 };
 
 /**
@@ -154,19 +150,11 @@ public:
         @param items The items to build the context from.*/
     ProjectItemContext( const QList<ProjectBaseItem*> &items );
 
-    /**Destructor.*/
-    virtual ~ProjectItemContext();
-
-    virtual int type() const;
-
     /**@return The project model item for the selected item.*/
-    QList<ProjectBaseItem*> items() const;
+    const QList<ProjectBaseItem*>& items() const { return m_items; }
 
 private:
-    class ProjectItemContextPrivate* const d;
-
-    ProjectItemContext( const ProjectItemContext & );
-    ProjectItemContext &operator=( const ProjectItemContext & );
+    QList<ProjectBaseItem*> m_items;
 };
 
 /**
@@ -182,23 +170,18 @@ public:
     OpenWithContext(const KUrl::List& urls, const KMimeType::Ptr& mimeType);
 
     /**
-     * @return Context::OpenWithContext
-     */
-    virtual int type() const;
-
-    /**
      * @return The files to open.
      */
-    KUrl::List urls() const;
+    const KUrl::List& urls() const { return m_urls; }
 
     /**
      * @return The mimetype of the url to open.
      */
-    KMimeType::Ptr mimeType() const;
+    KMimeType::Ptr mimeType() const { return m_mimeType; }
 
 private:
-    class OpenWithContextPrivate* const d;
-    Q_DISABLE_COPY(OpenWithContext)
+    KUrl::List m_urls;
+    KMimeType::Ptr m_mimeType;
 };
 
 }

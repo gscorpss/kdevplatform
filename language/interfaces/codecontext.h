@@ -48,21 +48,15 @@ class IndexedDUContext;
  */
 class KDEVPLATFORMLANGUAGE_EXPORT  DUContextContext : public Context {
 public:
-    DUContextContext(const IndexedDUContext& context);
-    virtual ~DUContextContext();
-        
-    ///Returns the represented DUContext
-    IndexedDUContext context() const;
-    
-    int type() const;
-    
-protected:
-    void setContext(IndexedDUContext context);
-private:
-    class Private;
-    Private *d;
+    DUContextContext(Context::Type type, const IndexedDUContext& context);
 
-    Q_DISABLE_COPY(DUContextContext)
+    ///Returns the represented DUContext
+    const IndexedDUContext& context() const { return m_item; }
+
+protected:
+    void setContext(IndexedDUContext context) { m_item = context; }
+private:
+    IndexedDUContext m_item;
 };
 
 /**
@@ -79,26 +73,18 @@ public:
      */
     DeclarationContext(const IndexedDeclaration& declaration, const DocumentRange& use = DocumentRange::invalid(), const IndexedDUContext& context = IndexedDUContext());
     ///Computes the items under the cursor
-    DeclarationContext(KTextEditor::View* view, KTextEditor::Cursor position);
-
-    /**Destructor.*/
-    virtual ~DeclarationContext();
-
-    /// Returns the type of this context.
-    virtual int type() const;
 
     ///The referenced declaration
-    IndexedDeclaration declaration() const;
+    const IndexedDeclaration& declaration() const { return m_declaration; }
     ///If this code-context represents the use of a declaration, then this contains the exact position+range
     ///of that use. declaration() returnes the used declaration, and context() the context
     ///that surrounds the use.
-    DocumentRange use() const;
-
+    const DocumentRange& use() const { return m_use; }
+protected:
+    DeclarationContext(Context::Type type, KTextEditor::View* view, KTextEditor::Cursor position);
 private:
-    class Private;
-    Private *d;
-
-    Q_DISABLE_COPY(DeclarationContext)
+    IndexedDeclaration m_declaration;
+    DocumentRange m_use;
 };
 
 }

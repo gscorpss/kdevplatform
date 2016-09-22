@@ -44,32 +44,27 @@ public:
         @param wordstr The current word under the cursor.*/
     EditorContext( KTextEditor::View*, KTextEditor::Cursor position );
 
-    /**Destructor.*/
-    virtual ~EditorContext();
-
-    virtual int type() const;
-
     /**@return The url for the file which this context was invoked for.*/
-    KUrl url() const;
+    const KUrl& url() const { return m_url; }
 
     /**@return The cursor position.*/
-    KTextEditor::Cursor position() const;
+    const KTextEditor::Cursor& position() const { return m_position; }
 
     /**@return A QString with the content of the line which this context was
         invoked for.*/
-    QString currentLine() const;
+    const QString& currentLine() const { return m_currentLine; }
 
     /**@return A QString containing the word near to the cursor when this
         context object was created.*/
-    QString currentWord() const;
+    const QString& currentWord() const { return m_currentWord; }
 
-    KTextEditor::View* view() const;
+    KTextEditor::View* view() const { return m_view; }
 
 private:
-    class EditorContextPrivate* const d;
-
-    EditorContext( const EditorContext & );
-    EditorContext &operator=( const EditorContext & );
+    KUrl m_url;
+    KTextEditor::Cursor m_position;
+    QString m_currentLine, m_currentWord;
+    KTextEditor::View* m_view;
 };
 
 }

@@ -26,66 +26,19 @@ Boston, MA 02110-1301, USA.
 
 namespace KDevelop {
 
-class EditorContextPrivate
-{
-public:
-    EditorContextPrivate( KTextEditor::View* view, KTextEditor::Cursor position )
-            : m_view( view )
-    {
-        m_url = view->document()->url();
-        m_position = position;
-        m_currentLine = view->document()->line(m_position.line());
-        int wordStart = m_position.column();
-        int wordEnd = m_position.column();
-        while(wordStart > 0 && wordStart < m_currentLine.length() && (m_currentLine[wordStart-1].isLetterOrNumber() || m_currentLine[wordStart-1] == '_'))
-            --wordStart;
-        while(wordEnd >= 0 && wordEnd < m_currentLine.length() && (m_currentLine[wordEnd].isLetterOrNumber() || m_currentLine[wordEnd] == '_'))
-            ++wordEnd;
-    }
-
-    KUrl m_url;
-    KTextEditor::Cursor m_position;
-    QString m_currentLine, m_currentWord;
-    KTextEditor::View* m_view;
-};
-
 EditorContext::EditorContext( KTextEditor::View* view, KTextEditor::Cursor position )
-        : DeclarationContext( view, position ), d( new EditorContextPrivate( view, position ) )
-{}
-
-EditorContext::~EditorContext()
+: DeclarationContext(Context::EditorContext, view, position ), m_view(view)
 {
-    delete d;
+    m_url = view->document()->url();
+    m_position = position;
+    m_currentLine = view->document()->line(m_position.line());
+    int wordStart = m_position.column();
+    int wordEnd = m_position.column();
+    while(wordStart > 0 && wordStart < m_currentLine.length() && (m_currentLine[wordStart-1].isLetterOrNumber() || m_currentLine[wordStart-1] == '_'))
+        --wordStart;
+    while(wordEnd >= 0 && wordEnd < m_currentLine.length() && (m_currentLine[wordEnd].isLetterOrNumber() || m_currentLine[wordEnd] == '_'))
+        ++wordEnd;
 }
 
-int EditorContext::type() const
-{
-    return Context::EditorContext;
-}
-
-KUrl EditorContext::url() const
-{
-    return d->m_url;
-}
-
-KTextEditor::Cursor EditorContext::position() const
-{
-    return d->m_position;
-}
-
-QString EditorContext::currentLine() const
-{
-    return d->m_currentLine;
-}
-
-QString EditorContext::currentWord() const
-{
-    return d->m_currentWord;
-}
-
-KTextEditor::View* EditorContext::view() const
-{
-    return d->m_view;
-}
 }
 

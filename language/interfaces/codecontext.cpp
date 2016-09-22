@@ -39,62 +39,24 @@ Boston, MA 02110-1301, USA.
 namespace KDevelop
 {
 
-class DUContextContext::Private
-{
-public:
-    Private( const IndexedDUContext& item ) : m_item( item )
-    {}
-
-    IndexedDUContext m_item;
-};
-
-DUContextContext::DUContextContext( const IndexedDUContext& item )
-        : Context(), d( new Private( item ) )
+DUContextContext::DUContextContext(Context::Type type, const KDevelop::IndexedDUContext& context )
+: Context(type), m_item( context )
 {}
 
-DUContextContext::~DUContextContext()
-{
-    delete d;
-}
-
-int DUContextContext::type() const
-{
-    return Context::CodeContext;
-}
-
-IndexedDUContext DUContextContext::context() const
-{
-    return d->m_item;
-}
-void DUContextContext::setContext(IndexedDUContext context)
-{
-    d->m_item = context;
-}
-
-class DeclarationContext::Private
-{
-public:
-    Private( const IndexedDeclaration& declaration, const DocumentRange& use ) : m_declaration( declaration ), m_use(use)
-    {}
-
-    IndexedDeclaration m_declaration;
-    DocumentRange m_use;
-};
-
-DeclarationContext::DeclarationContext( const IndexedDeclaration& declaration, const DocumentRange& use, const IndexedDUContext& context )
-        : DUContextContext(context), d( new Private( declaration, use ) )
+DeclarationContext::DeclarationContext(const IndexedDeclaration& declaration, const DocumentRange& use, const IndexedDUContext& context )
+: DUContextContext(Context::CodeContext, context), m_declaration( declaration), m_use(use)
 {}
 
-DeclarationContext::DeclarationContext(KTextEditor::View* view, KTextEditor::Cursor position) : DUContextContext(IndexedDUContext())
+DeclarationContext::DeclarationContext(Context::Type type, KTextEditor::View* view, KTextEditor::Cursor position)
+: DUContextContext(type, IndexedDUContext())
 {
     const KUrl& url = view->document()->url();
     const SimpleCursor pos = SimpleCursor(position);
     DUChainReadLocker lock;
-    DocumentRange useRange = DocumentRange(IndexedString(url), DUChainUtils::itemRangeUnderCursor(url, pos));
-    Declaration* declaration = DUChainUtils::itemUnderCursor(url, pos);
-    IndexedDeclaration indexed;
+    m_use = DocumentRange(IndexedString(url), DUChainUtils::itemRangeUnderCursor(url, pos));
+    KDevelop::Declaration* declaration = DUChainUtils::itemUnderCursor(url, pos);
     if ( declaration ) {
-        indexed = IndexedDeclaration(declaration);
+        m_declaration = IndexedDeclaration(declaration);
     }
     IndexedDUContext context;
     TopDUContext* topContext = DUChainUtils::standardContextForUrl(view->document()->url());
@@ -103,28 +65,7 @@ DeclarationContext::DeclarationContext(KTextEditor::View* view, KTextEditor::Cur
         if(specific)
             context = IndexedDUContext(specific);
     }
-    d = new Private(declaration, useRange);
     setContext(context);
-}
-
-DeclarationContext::~DeclarationContext()
-{
-    delete d;
-}
-
-int DeclarationContext::type() const
-{
-    return Context::CodeContext;
-}
-
-IndexedDeclaration DeclarationContext::declaration() const
-{
-    return d->m_declaration;
-}
-
-DocumentRange DeclarationContext::use() const
-{
-    return d->m_use;
 }
 
 }

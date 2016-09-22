@@ -37,108 +37,22 @@ Boston, MA 02110-1301, USA.
 namespace KDevelop
 {
 
-Context::Context()
-    : d(0)
-{}
-
-Context::~Context()
-{}
-
-bool Context::hasType( int aType ) const
-{
-    return aType == this->type();
-}
-
-class FileContextPrivate
-{
-public:
-    FileContextPrivate( const KUrl::List &urls )
-            : m_urls( urls )
-    {}
-
-    KUrl::List m_urls;
-};
-
 FileContext::FileContext( const KUrl::List &urls )
-        : Context(), d( new FileContextPrivate( urls ) )
+: Context(Context::FileContext), m_urls(urls)
 {}
-
-FileContext::~FileContext()
-{
-    delete d;
-}
-
-int FileContext::type() const
-{
-    return Context::FileContext;
-}
-
-KUrl::List FileContext::urls() const
-{
-    return d->m_urls;
-}
-
-class ProjectItemContextPrivate
-{
-public:
-    ProjectItemContextPrivate( const QList<ProjectBaseItem*> &items )
-        : m_items( items )
-    {}
-
-    QList<ProjectBaseItem*> m_items;
-};
 
 ProjectItemContext::ProjectItemContext( const QList<ProjectBaseItem*> &items )
-        : Context(), d( new ProjectItemContextPrivate( items ) )
+: Context(Context::ProjectItemContext)
+, m_items( items )
 {}
 
-ProjectItemContext::~ProjectItemContext()
-{
-    delete d;
-}
-
-int ProjectItemContext::type() const
-{
-    return Context::ProjectItemContext;
-}
-
-QList<ProjectBaseItem*> ProjectItemContext::items() const
-{
-    return d->m_items;
-}
-
-class OpenWithContextPrivate
-{
-public:
-    OpenWithContextPrivate(const KUrl::List& urls, const KMimeType::Ptr& mimeType)
-    : m_urls( urls )
-    , m_mimeType( mimeType )
-    {}
-
-    KUrl::List m_urls;
-    KMimeType::Ptr m_mimeType;
-};
 
 OpenWithContext::OpenWithContext(const KUrl::List& urls, const KMimeType::Ptr& mimeType)
-: Context()
-, d(new OpenWithContextPrivate(urls, mimeType))
+: Context(Context::OpenWithContext)
+, m_urls(urls)
+, m_mimeType(mimeType)
 {
 
-}
-
-int OpenWithContext::type() const
-{
-    return Context::OpenWithContext;
-}
-
-KUrl::List OpenWithContext::urls() const
-{
-    return d->m_urls;
-}
-
-KMimeType::Ptr OpenWithContext::mimeType() const
-{
-    return d->m_mimeType;
 }
 
 }
