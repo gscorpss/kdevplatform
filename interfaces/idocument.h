@@ -97,7 +97,7 @@ public:
      * returns the pretty name of this document that was set through setPrettyName(...).
      * If no pretty name was set, an empty string is returned.
      * */
-    virtual QString prettyName() const;
+    const QString& prettyName() const;
     
     /**
      * Returns the text editor, if this is a text document or 0 otherwise.
@@ -193,8 +193,8 @@ protected:
     void notifyLoaded();
 
 private:
-    friend class IDocumentPrivate;
-    class IDocumentPrivate* const d;
+    KDevelop::ICore* m_core;
+    QString m_prettyName;
 };
 
 }

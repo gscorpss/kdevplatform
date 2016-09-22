@@ -436,9 +436,7 @@ ContextMenuExtension DebugController::contextMenuExtension( Context* context )
     if( context->type() != Context::EditorContext )
         return menuExt;
 
-    KDevelop::EditorContext *econtext = dynamic_cast<KDevelop::EditorContext*>(context);
-    if (!econtext)
-        return menuExt;
+    KDevelop::EditorContext *econtext = static_cast<KDevelop::EditorContext*>(context);
 
     if (m_currentSession && m_currentSession.data()->isRunning()) {
         menuExt.addAction( KDevelop::ContextMenuExtension::DebugGroup, m_runToCursor);

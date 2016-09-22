@@ -916,7 +916,7 @@ ContextMenuExtension RunController::contextMenuExtension ( Context* ctx )
     d->contextItem = 0;
     ContextMenuExtension ext;
     if( ctx->type() == Context::ProjectItemContext ) {
-        KDevelop::ProjectItemContext* prjctx = dynamic_cast<KDevelop::ProjectItemContext*>( ctx );
+        KDevelop::ProjectItemContext* prjctx = static_cast<KDevelop::ProjectItemContext*>( ctx );
         if( prjctx->items().count() == 1 )
         {
             ProjectBaseItem* itm = prjctx->items().at( 0 );

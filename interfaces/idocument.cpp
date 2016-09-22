@@ -23,66 +23,38 @@
 
 namespace KDevelop {
 
-class IDocumentPrivate
-{
-public:
-    inline IDocumentPrivate(KDevelop::ICore *core)
-        : m_core(core), scriptWrapper(0)
-    {}
-
-    KDevelop::ICore* m_core;
-    QObject *scriptWrapper;
-    QString m_prettyName;
-
-    /* Internal access to the wrapper script object */
-    static inline QObject *&getWrapper(IDocument *doc)
-    {
-        return doc->d->scriptWrapper;
-    }
-};
-
-/* This allows the scripting backend to register the scripting
-   wrapper. Not beautiful, but makes sure it doesn't expand to much code.
-*/
-QObject *&getWrapper(IDocument *doc)
-{
-    return IDocumentPrivate::getWrapper(doc);
-}
-
 IDocument::IDocument( KDevelop::ICore* core )
-  : d(new IDocumentPrivate(core))
+: m_core(core)
 {
 }
 
 IDocument::~IDocument()
 {
-    delete d->scriptWrapper;
-    delete d;
 }
 
 KDevelop::ICore* IDocument::core()
 {
-    return d->m_core;
+    return m_core;
 }
 
 void IDocument::notifySaved()
 {
-    emit core()->documentController()->documentSaved(this);
+    emit m_core->documentController()->documentSaved(this);
 }
 
 void IDocument::notifyStateChanged()
 {
-    emit core()->documentController()->documentStateChanged(this);
+    emit m_core->documentController()->documentStateChanged(this);
 }
 
 void IDocument::notifyActivated()
 {
-    emit core()->documentController()->documentActivated(this);
+    emit m_core->documentController()->documentActivated(this);
 }
 
 void IDocument::notifyContentChanged()
 {
-    emit core()->documentController()->documentContentChanged(this);
+    emit m_core->documentController()->documentContentChanged(this);
 }
 
 bool IDocument::isTextDocument() const
@@ -92,7 +64,7 @@ bool IDocument::isTextDocument() const
 
 void IDocument::notifyTextDocumentCreated()
 {
-    emit core()->documentController()->textDocumentCreated(this);
+    emit m_core->documentController()->textDocumentCreated(this);
 }
 
 KTextEditor::Range IDocument::textSelection() const
@@ -110,25 +82,25 @@ QString IDocument::textWord() const
     return QString();
 }
 
-QString IDocument::prettyName() const
+const QString& IDocument::prettyName() const
 {
-    return d->m_prettyName;
+    return m_prettyName;
 }
 
 void IDocument::setPrettyName(QString name)
 {
-    d->m_prettyName = name;
+    m_prettyName = name;
 }
 
 void IDocument::notifyUrlChanged()
 {
-    emit core()->documentController()->documentUrlChanged(this);
+    emit m_core->documentController()->documentUrlChanged(this);
 }
 
 void IDocument::notifyLoaded()
 {
-    emit core()->documentController()->documentLoadedPrepare(this);
-    emit core()->documentController()->documentLoaded(this);
+    emit m_core->documentController()->documentLoadedPrepare(this);
+    emit m_core->documentController()->documentLoaded(this);
 }
 
 }

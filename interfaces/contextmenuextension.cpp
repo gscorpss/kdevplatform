@@ -49,45 +49,28 @@ public:
     QMap<QString,QList<QAction*> > extensions;
 };
 
-ContextMenuExtension::ContextMenuExtension()
-    : d(new ContextMenuExtensionPrivate)
-{
-}
-
-ContextMenuExtension::~ContextMenuExtension()
-{
-    delete d;
-}
-
-
-ContextMenuExtension::ContextMenuExtension( const ContextMenuExtension& rhs )
-    : d( new ContextMenuExtensionPrivate )
-{
-    d->extensions = rhs.d->extensions;
-}
-
 ContextMenuExtension& ContextMenuExtension::operator=( const ContextMenuExtension& rhs )
 {
     if( this == &rhs )
         return *this;
 
-    d->extensions = rhs.d->extensions;
+    extensions = rhs.extensions;
     return *this;
 }
 
 QList<QAction*> ContextMenuExtension::actions( const QString& group ) const
 {
-    return d->extensions.value( group, QList<QAction*>() );
+    return extensions.value( group, QList<QAction*>() );
 }
 
 void ContextMenuExtension::addAction( const QString& group, QAction* action )
 {
-    if( !d->extensions.contains( group ) )
+    if( !extensions.contains( group ) )
     {
-        d->extensions.insert( group, QList<QAction*>() << action );
+        extensions.insert( group, QList<QAction*>() << action );
     } else
     {
-        d->extensions[group].append( action );
+        extensions[group].append( action );
     }
 }
 

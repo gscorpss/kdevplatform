@@ -23,6 +23,7 @@
 
 #include <QtCore/QString>
 #include <QtCore/QList>
+#include <QMap>
 
 #include "interfacesexport.h"
 
@@ -70,9 +71,8 @@ public:
     /**
      * create new context menu extension object
      */
-    ContextMenuExtension();
-    ~ContextMenuExtension();
-    ContextMenuExtension( const ContextMenuExtension& rhs );
+    ContextMenuExtension() {}
+    ContextMenuExtension( const ContextMenuExtension& rhs ) : extensions(rhs.extensions) {}
 
     ContextMenuExtension& operator=( const ContextMenuExtension& rhs );
 
@@ -96,7 +96,7 @@ public:
     static void populateMenu(QMenu* menu, const QList<ContextMenuExtension>& extensions);
 
 private:
-    class ContextMenuExtensionPrivate* const d;
+    QMap<QString,QList<QAction*> > extensions;
 };
 
 }
