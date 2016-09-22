@@ -39,15 +39,5 @@ const QList< ILauncher* >& LaunchConfigurationType::launchers() const
     return starters;
 }
 
-ILauncher* LaunchConfigurationType::launcherForId( const QString& id )
-{
-    for( ILauncher* l : starters )
-    {
-        if( l->id() == id )
-           return l;
-    }
-    return 0;
-}
-
 }
 

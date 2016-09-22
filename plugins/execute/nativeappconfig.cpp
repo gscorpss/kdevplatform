@@ -354,7 +354,8 @@ NativeAppPageFactory::NativeAppPageFactory()
 {
 }
 
-NativeAppConfigType::NativeAppConfigType() 
+NativeAppConfigType::NativeAppConfigType()
+: LaunchConfigurationType(i18n("Compiled Binary"), ExecutePlugin::_nativeAppConfigTypeId)
 {
     factoryList.append( new NativeAppPageFactory() );
 }
@@ -365,21 +366,9 @@ NativeAppConfigType::~NativeAppConfigType()
     factoryList.clear();
 }
 
-const QString& NativeAppConfigType::name() const
-{
-    static QString s(i18n("Compiled Binary"));
-    return s;
-}
-
-
 const QList< KDevelop::LaunchConfigurationPageFactory* >& NativeAppConfigType::configPages() const
 {
     return factoryList;
-}
-
-const QString& NativeAppConfigType::id() const 
-{
-    return ExecutePlugin::_nativeAppConfigTypeId;
 }
 
 KIcon NativeAppConfigType::icon() const

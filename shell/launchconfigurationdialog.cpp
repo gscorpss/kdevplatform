@@ -289,11 +289,10 @@ void LaunchConfigurationDialog::selectionChanged(QItemSelection selected, QItemS
             if( lm )
             {
                 bool b = debugger->blockSignals(true);
-                QList<ILauncher*> launchers = l->type()->launchers();
-                for( QList<ILauncher*>::const_iterator it = launchers.constBegin(); it != launchers.constEnd(); it++ )
+                for(ILauncher* il : l->type()->launchers())
                 {
-                    if( ((*it)->supportedModes().contains( lm->id() ) ) ) {
-                        debugger->addItem( (*it)->name(), (*it)->id() );
+                    if( (il->supportedModes().contains( lm->id() ) ) ) {
+                        debugger->addItem( il->name(), il->id() );
                     }
                 }
                 debugger->blockSignals(b);

@@ -21,9 +21,11 @@
 #define KDEVPLATFORM_LAUNCHCONFIGURATIONTYPE_H
 
 #include "interfacesexport.h"
+#include "ilauncher.h"
 
 #include <QtCore/QList>
 #include <QtCore/QStringList>
+#include <algorithm>
 
 class QMenu;
 class KIcon;
@@ -49,6 +51,11 @@ class KDEVPLATFORMINTERFACES_EXPORT LaunchConfigurationType : public QObject
 {
 Q_OBJECT
 public:
+    LaunchConfigurationType(const QString& name, const QString& id)
+    : m_name(name)
+    , m_id(id)
+    {}
+
     virtual ~LaunchConfigurationType() {}
 
     /**
@@ -57,13 +64,13 @@ public:
      * configurations for the pages of this config type
      * @returns a unique identifier for this launch configuration type
      */
-    virtual const QString& id() const = 0;
+    const QString& id() const { return m_id; }
 
     /**
      * Provide a user visible name for the type
      * @returns a translatable string for the type
      */
-    virtual const QString& name() const = 0;
+    const QString& name() const { return m_name; }
 
     /**
      * Add @p starter to this configuration type
@@ -88,7 +95,23 @@ public:
      * @param id the id of the launcher to be found
      * @returns the launcher with the given id or 0 if there's no such launcher in this configuration type
      */
-    ILauncher* launcherForId( const QString& id );
+    ILauncher* launcherForId( const QString& id )
+    {
+        return launcherBy([&](const ILauncher* l) { return l->id() == id; });
+//         for( ILauncher* l : starters )
+//         {
+//             if( l->id() == id )
+//                 return l;
+//         }
+//         return nullptr;
+    }
+
+    template<class Predicat>
+    ILauncher* launcherBy( const Predicat& predicat ) const
+    {
+        QList<ILauncher*>::const_iterator iter = std::find_if(starters.begin(), starters.end(), predicat);
+        return iter != starters.end() ? *iter : nullptr;
+    }
 
     /**
      * Provide a list of widgets to configure a launch configuration for this type
@@ -101,10 +124,10 @@ public:
      * @returns an icon to be used for representing launch configurations of this type
      */
     virtual KIcon icon() const = 0;
-    
+
     /**
      * Check whether this launch configuration type can launch the given project item
-     * @param item the project tree item to test 
+     * @param item the project tree item to test
      * @returns true if this configuration type can launch the given item, false otherwise
      */
     virtual bool canLaunch( KDevelop::ProjectBaseItem* item ) const = 0;
@@ -114,7 +137,7 @@ public:
      * @param config the configuration to setup
      * @param item the item to launch
      */
-    virtual void configureLaunchFromItem( KConfigGroup config, 
+    virtual void configureLaunchFromItem( KConfigGroup config,
                                           KDevelop::ProjectBaseItem* item ) const = 0;
 
     /**
@@ -131,18 +154,20 @@ public:
     * @returns true if this configuration type can launch the given file, false otherwise
     */
     virtual bool canLaunch( const KUrl& file ) const = 0;
-    
+
     /**
      * Returns a menu that will be added to the UI where the interface will be
      * able to add any suggestion it needs, like default targets.
      */
     virtual QMenu* launcherSuggestions() { return 0; }
-    
+
 signals:
     void signalAddLaunchConfiguration(KDevelop::ILaunchConfiguration* launch);
-    
+
 private:
     QList<ILauncher*> starters;
+    const QString& m_name;
+    const QString m_id;
 };
 
 }

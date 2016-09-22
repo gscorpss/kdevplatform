@@ -51,7 +51,7 @@ public:
      * @param name the new name for the launch configuration
      */
     void setName( const QString& name );
-    
+
     /**
      * Changes the type of this launch configuration. Note that
      * this removes all existing config values from this configuration
@@ -63,30 +63,30 @@ public:
      * @copydoc KDevelop::ILaunchConfiguration::config()
      */
     virtual const KConfigGroup config() const;
-    
+
     /**
      * @copydoc KDevelop::ILaunchConfiguration::type()
      */
     virtual LaunchConfigurationType* type() const;
-    
+
     /**
      * @copydoc KDevelop::ILaunchConfiguration::name()
      */
     virtual QString name() const;
-    
+
     /**
      * @copydoc KDevelop::ILaunchConfiguration::project()
      */
     virtual IProject* project() const;
     void save();
-    
+
     QString configGroupName() const;
-    
+
     virtual const QString& launcherForMode(const QString& mode) const;
     void setLauncherForMode( const QString& mode, const QString& id );
-    
+
     KConfigGroup config();
-    
+
 signals:
     void nameChanged( LaunchConfiguration* );
     void typeChanged( LaunchConfigurationType* );

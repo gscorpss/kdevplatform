@@ -194,6 +194,7 @@ ScriptAppPageFactory::ScriptAppPageFactory()
 }
 
 ScriptAppConfigType::ScriptAppConfigType()
+: LaunchConfigurationType(i18n("Script Application"), ExecuteScriptPlugin::_scriptAppConfigTypeId)
 {
     factoryList.append( new ScriptAppPageFactory() );
 }
@@ -204,21 +205,9 @@ ScriptAppConfigType::~ScriptAppConfigType()
     factoryList.clear();
 }
 
-const QString& ScriptAppConfigType::name() const
-{
-    static QString s(i18n("Script Application"));
-    return s;
-}
-
-
 const QList< KDevelop::LaunchConfigurationPageFactory* >& ScriptAppConfigType::configPages() const
 {
     return factoryList;
-}
-
-const QString& ScriptAppConfigType::id() const
-{
-    return ExecuteScriptPlugin::_scriptAppConfigTypeId;
 }
 
 KIcon ScriptAppConfigType::icon() const

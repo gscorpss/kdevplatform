@@ -63,7 +63,7 @@ class ExecutePlugin : public KDevelop::IPlugin, public IExecutePlugin
     QString environmentGroup( KDevelop::ILaunchConfiguration* ) const;
     bool useTerminal( KDevelop::ILaunchConfiguration* ) const;
     QString terminal( KDevelop::ILaunchConfiguration* ) const;
-    QString nativeAppConfigTypeId() const;
+    const QString& nativeAppConfigTypeId() const;
 
     NativeAppConfigType* m_configType;
 };

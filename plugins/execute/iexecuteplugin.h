@@ -48,7 +48,7 @@ public:
     virtual QString environmentGroup( KDevelop::ILaunchConfiguration* config) const = 0;
     virtual bool useTerminal( KDevelop::ILaunchConfiguration* config) const = 0;
     virtual QString terminal( KDevelop::ILaunchConfiguration* config) const = 0;
-    virtual QString nativeAppConfigTypeId() const = 0;
+    virtual const QString& nativeAppConfigTypeId() const = 0;
 };
 
 Q_DECLARE_INTERFACE( IExecutePlugin, "org.kdevelop.IExecutePlugin" )

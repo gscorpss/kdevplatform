@@ -110,24 +110,15 @@ const QString& LaunchConfiguration::launcherForMode(const QString& mode) const
         QStringList launchers = baseGroup.readEntry( "Configured Launchers", QStringList() );
         if( launchers.count() > idx )
         {
-            foreach( ILauncher* l, type()->launchers() )
-            {
-                if( l->id() == launchers.at( idx ) )
-                {
-                    return launchers.at( idx );
-                }
-            }
+            if (type()->launcherForId(launchers.at( idx )))
+                return launchers.at( idx );
         }
     }
 
     //No launcher configured, lets just try with the first one in the list and hope it works
-    foreach( ILauncher* l, type()->launchers() )
-    {
-        if( l->supportedModes().contains( mode ) )
-        {
-            return l->id();
-        }
-    }
+    if (ILauncher* l = type()->launcherBy([&](ILauncher* l) { return l->supportedModes().contains( mode ); }))
+        return l->id();
+
     static const QString empty;
     return empty;
 }

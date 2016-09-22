@@ -244,7 +244,7 @@ KUrl ExecutePlugin::workingDirectory( KDevelop::ILaunchConfiguration* cfg ) cons
 }
 
 
-QString ExecutePlugin::nativeAppConfigTypeId() const
+const QString& ExecutePlugin::nativeAppConfigTypeId() const
 {
     return _nativeAppConfigTypeId;
 }
