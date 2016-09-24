@@ -141,7 +141,7 @@ struct ContainerPrivate {
         QVector<View*> views;
         views.reserve(viewForWidget.size());
 
-        foreach(View* view, viewForWidget){ 
+        foreach(View* view, viewForWidget){
             views << view;
         }
 
@@ -401,14 +401,18 @@ void Container::documentTitleChanged(Sublime::Document* doc)
             // extended information from subclasses like IDocument which can use
             // the rest of the kdevplatform API
             UrlDocument* udoc = dynamic_cast<UrlDocument*>( doc );
-            if( udoc ) {
+            if( udoc )
+            {
+                txt += " (";
+
                 QString pretty;
                 if( udoc->getUrl().isLocalFile() ) {
-                    pretty = udoc->getUrl().toLocalFile();
+                    txt += udoc->getUrl().toLocalFile();
                 } else {
-                    pretty = udoc->getUrl().prettyUrl();
+                    txt += udoc->getUrl().prettyUrl();
                 }
-                txt = txt + " (" + pretty + ')';
+
+                txt += ')';
             }
             d->fileNameCorner->setText( txt );
             int tabIndex = d->stack->indexOf(it.key());

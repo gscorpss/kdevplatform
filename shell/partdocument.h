@@ -43,7 +43,6 @@ class KDEVPLATFORMSHELL_EXPORT PartDocument: public Sublime::UrlDocument, public
     Q_OBJECT
 public:
     PartDocument(const KUrl &url, ICore* core, const QString& preferredPart = QString() );
-    virtual ~PartDocument();
 
     virtual KUrl url() const;
     void setUrl(const KUrl& newUrl);
@@ -60,7 +59,7 @@ public:
     virtual bool isActive() const;
     virtual DocumentState state() const;
 
-    virtual void setPrettyName(QString name);
+    virtual void setPrettyName(const QString& name);
     
     virtual void activate(Sublime::View *activeView, KParts::MainWindow *mainWindow);
 
@@ -79,7 +78,8 @@ protected:
     void addPartForView(QWidget* widget, KParts::Part* part);
     
 private:
-    class PartDocumentPrivate * const d;
+    QMap<QWidget*, KParts::Part*> m_partForView;
+    QString m_preferredPart;
 };
 
 }

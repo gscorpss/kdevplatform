@@ -40,24 +40,18 @@ public:
 };
 
 PartDocument::PartDocument(const KUrl& url, KDevelop::ICore* core, const QString& preferredPart)
-    : Sublime::UrlDocument(core->uiController()->controller(), url), KDevelop::IDocument(core), d(new PartDocumentPrivate)
+    : Sublime::UrlDocument(core->uiController()->controller(), url), KDevelop::IDocument(core), m_preferredPart(preferredPart)
 {
-    d->preferredPart = preferredPart;
-}
-
-PartDocument::~PartDocument()
-{
-    delete d;
 }
 
 QWidget *PartDocument::createViewWidget(QWidget* /*parent*/)
 {
-    KParts::Part *part = Core::self()->partControllerInternal()->createPart(url(), d->preferredPart);
+    KParts::Part *part = Core::self()->partControllerInternal()->createPart(url(), m_preferredPart);
     if( part )
     {
         Core::self()->partController()->addPart(part);
         QWidget *w = part->widget();
-        d->partForView[w] = part;
+        m_partForView[w] = part;
         return w;
     }
     return 0;
@@ -65,7 +59,7 @@ QWidget *PartDocument::createViewWidget(QWidget* /*parent*/)
 
 KParts::Part *PartDocument::partForView(QWidget *view) const
 {
-    return d->partForView[view];
+    return m_partForView[view];
 }
 
 
@@ -145,7 +139,7 @@ bool PartDocument::close(DocumentSaveMode mode)
     //close all views and then delete ourself
     closeViews();
 
-    foreach (KParts::Part* part, d->partForView)
+    foreach (KParts::Part* part, m_partForView)
         part->deleteLater();
 
     // The document will be deleted automatically if there are no views left
@@ -205,7 +199,7 @@ void PartDocument::setUrl(const KUrl& newUrl)
     notifyUrlChanged();
 }
 
-void PartDocument::setPrettyName(QString name)
+void PartDocument::setPrettyName(const QString& name)
 {
     KDevelop::IDocument::setPrettyName(name);
     // Re-set the url, to trigger the whole chain
@@ -217,12 +211,12 @@ void PartDocument::setPrettyName(QString name)
 
 QMap<QWidget*, KParts::Part*> PartDocument::partForView() const
 {
-    return d->partForView;
+    return m_partForView;
 }
 
 void PartDocument::addPartForView(QWidget* w, KParts::Part* p)
 {
-    d->partForView[w]=p;
+    m_partForView[w]=p;
 }
 
 }

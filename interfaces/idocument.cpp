@@ -87,7 +87,7 @@ const QString& IDocument::prettyName() const
     return m_prettyName;
 }
 
-void IDocument::setPrettyName(QString name)
+void IDocument::setPrettyName(const QString& name)
 {
     m_prettyName = name;
 }
