@@ -400,7 +400,7 @@ void Container::documentTitleChanged(Sublime::Document* doc)
             //TODO: Maybe add new virtual in Document to support supplying this
             // extended information from subclasses like IDocument which can use
             // the rest of the kdevplatform API
-            UrlDocument* udoc = static_cast<UrlDocument*>( doc );
+            UrlDocument* udoc = dynamic_cast<UrlDocument*>( doc );
             if( udoc ) {
                 QString pretty;
                 if( udoc->getUrl().isLocalFile() ) {
