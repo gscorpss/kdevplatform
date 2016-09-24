@@ -33,7 +33,6 @@ namespace Sublime {
 class SUBLIME_EXPORT UrlDocument: public Document {
 public:
     UrlDocument(Sublime::Controller* controller, const KUrl& url);
-    ~UrlDocument();
 
     virtual QString documentSpecifier() const;
 
@@ -49,8 +48,7 @@ protected:
     void setUrl(const KUrl& newUrl);
 
 private:
-    struct UrlDocumentPrivate * const d;
-
+    KUrl m_url;
 };
 
 }

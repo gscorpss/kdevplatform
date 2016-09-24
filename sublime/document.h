@@ -47,7 +47,7 @@ class SUBLIME_EXPORT Document: public QObject {
 public:
     /**Creates a document and adds it to a @p controller.*/
     Document(const QString &title, Controller *controller, const QString& documentType);
-
+    virtual ~Document() {}
     /**@return the new view for this document.
     @note it will not create a widget, just return a view object.*/
     View *createView();
