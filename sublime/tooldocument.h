@@ -72,8 +72,6 @@ public:
     ToolDocument(const QString &title, Controller *controller, ToolFactory *factory);
     ~ToolDocument();
 
-    virtual QString documentType() const;
-
     virtual QString documentSpecifier() const;
 
 protected:

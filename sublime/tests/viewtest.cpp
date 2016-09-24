@@ -55,8 +55,7 @@ public:
 
 class TestDocument: public Document {
 public:
-    TestDocument(Controller *controller): Document("TestDocument", controller) {}
-    virtual QString documentType() const { return "Test"; }
+    TestDocument(Controller *controller): Document("TestDocument", controller, "Test") {}
     virtual QString documentSpecifier() const { return QString(); }
 protected:
     virtual QWidget *createViewWidget(QWidget *parent = 0) { return new QWidget(parent); }

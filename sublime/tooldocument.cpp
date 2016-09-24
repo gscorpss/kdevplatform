@@ -39,8 +39,8 @@ struct ToolDocumentPrivate {
 // class ToolDocument
 
 ToolDocument::ToolDocument(const QString &title, Controller *controller, ToolFactory *factory)
-    :Document(title, controller)
-    , d( new ToolDocumentPrivate() )
+:Document(title, controller, "Tool")
+, d( new ToolDocumentPrivate() )
 {
     d->factory = factory;
 }
@@ -58,11 +58,6 @@ ToolFactory *ToolDocument::factory() const
 QWidget *ToolDocument::createViewWidget(QWidget *parent)
 {
     return factory()->create(this, parent);
-}
-
-QString ToolDocument::documentType() const
-{
-    return "Tool";
 }
 
 QString ToolDocument::documentSpecifier() const

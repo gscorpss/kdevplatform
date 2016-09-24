@@ -26,65 +26,46 @@
 
 namespace Sublime {
 
-// struct DocumentPrivate
-
-struct DocumentPrivate {
-    DocumentPrivate(Document *doc): m_document(doc) {}
-
-    void removeView(QObject *obj)
-    {
-        views.removeAll(reinterpret_cast<Sublime::View*>(obj));
-        emit m_document->viewNumberChanged(m_document);
-        //no need to keep empty document - we need to remove it
-        if (views.count() == 0)
-        {
-            emit m_document->aboutToDelete(m_document);
-            m_document->deleteLater();
-        }
-    }
-
-    Controller *controller;
-    QList<View*> views;
-    QIcon statusIcon;
-    QString documentToolTip;
-
-    Document *m_document;
-};
-
-
-
 //class Document
 
-Document::Document(const QString &title, Controller *controller)
-    :QObject(controller), d( new DocumentPrivate(this) )
+Document::Document(const QString &title, Controller *controller, const QString& documentType)
+    :QObject(controller)
+    , m_controller(controller)
+    , m_documentType(documentType)
 {
     setObjectName(title);
-    d->controller = controller;
-    d->controller->addDocument(this);
-    connect(this, SIGNAL(destroyed(QObject*)), d->controller, SLOT(removeDocument(QObject*)));
+    m_controller->addDocument(this);
+    connect(this, SIGNAL(destroyed(QObject*)), m_controller, SLOT(removeDocument(QObject*)));
 }
 
-Document::~Document()
+void Document::removeView(QObject *obj)
 {
-    delete d;
+    m_views.removeAll(reinterpret_cast<Sublime::View*>(obj));
+    emit viewNumberChanged(this);
+    //no need to keep empty document - we need to remove it
+    if (m_views.count() == 0)
+    {
+        emit aboutToDelete(this);
+        deleteLater();
+    }
 }
 
 Controller *Document::controller() const
 {
-    return d->controller;
+    return m_controller;
 }
 
 View *Document::createView()
 {
     View *view = newView(this);
     connect(view, SIGNAL(destroyed(QObject*)), this, SLOT(removeView(QObject*)));
-    d->views.append(view);
+    m_views.append(view);
     return view;
 }
 
 const QList<View*> &Document::views() const
 {
-    return d->views;
+    return m_views;
 }
 
 QString Document::title() const
@@ -92,9 +73,9 @@ QString Document::title() const
     return objectName();
 }
 
-QString Document::toolTip() const
+const QString& Document::toolTip() const
 {
-    return d->documentToolTip;
+    return documentToolTip;
 }
 
 void Document::setTitle(const QString& newTitle)
@@ -105,7 +86,7 @@ void Document::setTitle(const QString& newTitle)
 
 void Document::setToolTip(const QString& newToolTip)
 {
-    d->documentToolTip=newToolTip;
+    documentToolTip=newToolTip;
 }
 
 View *Document::newView(Document *doc)
@@ -119,13 +100,13 @@ View *Document::newView(Document *doc)
 
 void Document::setStatusIcon(QIcon icon)
 {
-    d->statusIcon = icon;
+    m_statusIcon = icon;
     emit statusIconChanged(this);
 }
 
 QIcon Document::statusIcon() const
 {
-    return d->statusIcon;
+    return m_statusIcon;
 }
 
 void Document::closeViews()

@@ -21,6 +21,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QList>
+#include <QIcon>
 
 
 #include "sublimeexport.h"
@@ -45,8 +46,7 @@ class SUBLIME_EXPORT Document: public QObject {
     Q_OBJECT
 public:
     /**Creates a document and adds it to a @p controller.*/
-    Document(const QString &title, Controller *controller);
-    ~Document();
+    Document(const QString &title, Controller *controller, const QString& documentType);
 
     /**@return the new view for this document.
     @note it will not create a widget, just return a view object.*/
@@ -62,9 +62,9 @@ public:
     /**Set the document title.*/
     void setTitle(const QString& newTitle);
     void setToolTip(const QString& newToolTip);
-    QString toolTip() const;
+    const QString& toolTip() const;
     /**@return the type of document which can be written to config.*/
-    virtual QString documentType() const = 0;
+    const QString& documentType() const { return m_documentType; }
 
     /**@return the specifics of this document which can be written to config.*/
     virtual QString documentSpecifier() const = 0;
@@ -135,11 +135,15 @@ protected:
     /** Closes all views associated to this document */
     virtual void closeViews();
     
+private slots:
+    void removeView(QObject *obj);
+
 private:
-    Q_PRIVATE_SLOT(d, void removeView(QObject*))
-
-    struct DocumentPrivate *const d;
-
+    Controller *m_controller;
+    QList<View*> m_views;
+    QIcon m_statusIcon;
+    QString documentToolTip;
+    QString m_documentType;
     friend struct DocumentPrivate;
     friend class View;
 };

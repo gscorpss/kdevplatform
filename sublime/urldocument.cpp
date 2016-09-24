@@ -38,7 +38,7 @@ struct UrlDocumentPrivate {
 // class UrlDocument
 
 UrlDocument::UrlDocument(Controller *controller, const KUrl &url)
-    :Document(url.fileName(), controller), d( new UrlDocumentPrivate() )
+:Document(url.fileName(), controller, "Url"), d( new UrlDocumentPrivate() )
 {
     setUrl(url);
 }
@@ -65,11 +65,6 @@ QWidget *UrlDocument::createViewWidget(QWidget *parent)
 {
     ///@todo adymo: load file contents here
     return new KTextEdit(parent);
-}
-
-QString UrlDocument::documentType() const
-{
-    return "Url";
 }
 
 QString UrlDocument::documentSpecifier() const
