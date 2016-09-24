@@ -36,7 +36,7 @@ public:
 
     virtual QString documentSpecifier() const;
 
-    KUrl url() const;
+    const KUrl& getUrl() const;
 
     /**
      * @return the icon for the mimetype of the document url.

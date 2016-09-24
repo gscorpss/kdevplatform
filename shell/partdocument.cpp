@@ -194,7 +194,7 @@ void PartDocument::setTextSelection(const KTextEditor::Range &range)
 
 KUrl PartDocument::url() const
 {
-    return Sublime::UrlDocument::url();
+    return Sublime::UrlDocument::getUrl();
 }
 
 void PartDocument::setUrl(const KUrl& newUrl)

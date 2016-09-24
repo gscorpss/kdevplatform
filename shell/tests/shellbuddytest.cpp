@@ -107,9 +107,9 @@ void ShellBuddyTest::cleanupTestCase()
 #define verifyFilename(view, endOfFilename) \
     QVERIFY(view); \
     { \
-        Sublime::UrlDocument *urlDoc = dynamic_cast<Sublime::UrlDocument *>(view->document()); \
+        Sublime::UrlDocument *urlDoc = static_cast<Sublime::UrlDocument *>(view->document()); \
         QVERIFY(urlDoc); \
-        QVERIFY(urlDoc->url().toLocalFile().endsWith(endOfFilename)); \
+        QVERIFY(urlDoc->getUrl().toLocalFile().endsWith(endOfFilename)); \
     }
 
 void ShellBuddyTest::createFile(const KTempDir& dir, const QString& filename)
@@ -174,7 +174,7 @@ void ShellBuddyTest::testDeclarationDefinitionOrder()
     //QCOMPARE(m_uiController->documents().count(), 6);
     QCOMPARE(areaIndex->viewCount(), 6);
 
-    qDebug() << dynamic_cast<Sublime::UrlDocument*>(areaIndex->viewAt(0)->document())->url();
+    qDebug() << dynamic_cast<Sublime::UrlDocument*>(areaIndex->viewAt(0)->document())->getUrl();
     verifyFilename(areaIndex->views().value(0), "a.l.txt");
     verifyFilename(areaIndex->views().value(1), "a.r.txt");
     verifyFilename(areaIndex->views().value(2), "b.l.txt");

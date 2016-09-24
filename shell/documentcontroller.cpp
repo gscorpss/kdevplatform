@@ -454,7 +454,7 @@ struct DocumentControllerPrivate {
                     if(activeView)
                         activeDoc = dynamic_cast<Sublime::UrlDocument *>(activeView->document());
                     if(activeDoc && Core::self()->uiControllerInternal()->arrangeBuddies()) {
-                        QString mime = KMimeType::findByUrl(activeDoc->url())->name();
+                        QString mime = KMimeType::findByUrl(activeDoc->getUrl())->name();
                         buddyFinder = IBuddyDocumentFinder::finderForMimeType(mime);
                     }
 
@@ -476,7 +476,7 @@ struct DocumentControllerPrivate {
                             afterActiveDoc = dynamic_cast<Sublime::UrlDocument *>(afterActiveView->document());
                         }
                         if(activeDoc && afterActiveDoc &&
-                           buddyFinder->areBuddies(activeDoc->url(), afterActiveDoc->url()))
+                           buddyFinder->areBuddies(activeDoc->getUrl(), afterActiveDoc->getUrl()))
                         {
                             // don't insert in between of two buddies, but after them
                             area->addView(partView, activeAreaIndex, afterActiveView);

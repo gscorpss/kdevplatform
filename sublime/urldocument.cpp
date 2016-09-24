@@ -37,7 +37,7 @@ UrlDocument::UrlDocument(Controller *controller, const KUrl &url)
     setUrl(url);
 }
 
-KUrl UrlDocument::url() const
+const KUrl& UrlDocument::getUrl() const
 {
     return m_url;
 }

@@ -388,7 +388,7 @@ void MainWindowPrivate::tabToolTipRequested(Sublime::View* view, Sublime::Contai
     Sublime::UrlDocument* urlDoc = dynamic_cast<Sublime::UrlDocument*>(view->document());
 
     if (urlDoc) {
-        TopDUContext* top = DUChainUtils::standardContextForUrl(urlDoc->url());
+        TopDUContext* top = DUChainUtils::standardContextForUrl(urlDoc->getUrl());
 
         if (top) {
             if ( QWidget* navigationWidget = top->createNavigationWidget() ) {
